@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2020 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.sail.shacl.ast.planNodes;
@@ -23,10 +26,8 @@ public class ValidationReportNode implements PlanNode {
 	private boolean printed = false;
 	private ValidationExecutionLogger validationExecutionLogger;
 
-	public ValidationReportNode(PlanNode parent,
-			Function<ValidationTuple, ValidationResult> validationResultFunction) {
-		parent = PlanNodeHelper.handleSorting(this, parent);
-		this.parent = parent;
+	public ValidationReportNode(PlanNode parent, Function<ValidationTuple, ValidationResult> validationResultFunction) {
+		this.parent = PlanNodeHelper.handleSorting(this, parent);
 		this.validationResultFunction = validationResultFunction;
 	}
 

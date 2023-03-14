@@ -1,12 +1,13 @@
-/*
- * ******************************************************************************
- *  * Copyright (c) 2021 Eclipse RDF4J contributors.
- *  * All rights reserved. This program and the accompanying materials
- *  * are made available under the terms of the Eclipse Distribution License v1.0
- *  * which accompanies this distribution, and is available at
- *  * http://www.eclipse.org/org/documents/edl-v10.php.
- *  ******************************************************************************
- */
+/*******************************************************************************
+ * Copyright (c) 2021 Eclipse RDF4J contributors.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *******************************************************************************/
 
 package org.eclipse.rdf4j.spring.resultcache;
 
@@ -16,8 +17,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 /**
- * @since 4.0.0
  * @author Florian Kleedorfer
+ * @since 4.0.0
  */
 @ConfigurationProperties(prefix = "rdf4j.spring.resultcache")
 @Validated
@@ -25,10 +26,14 @@ public class ResultCacheProperties {
 
 	private boolean enabled = false;
 
-	/** Initial size of each cache * */
+	/**
+	 * Initial size of each cache *
+	 */
 	private int initialSize = 10;
 
-	/** Maximum size of each cache * */
+	/**
+	 * Maximum size of each cache *
+	 */
 	private int maxSize = 1000;
 
 	/**
@@ -37,7 +42,9 @@ public class ResultCacheProperties {
 	 */
 	private boolean assumeNoOtherRepositoryClients = false;
 
-	/** Max age for cache entries. Specifiy as Duration, e.g. 1H, 10m, etc. */
+	/**
+	 * Max age for cache entries. Specifiy as Duration, e.g. 1H, 10m, etc.
+	 */
 	private Duration entryLifetime = Duration.ofHours(1);
 
 	public boolean isEnabled() {

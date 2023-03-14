@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.rio.helpers;
 
@@ -15,8 +18,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.xml.bind.annotation.adapters.HexBinaryAdapter;
 
@@ -44,6 +47,10 @@ import org.eclipse.rdf4j.rio.RioSetting;
  * @author Arjohn Kampman
  */
 public abstract class AbstractRDFParser implements RDFParser {
+
+	// static UUID as prefix together with a thread safe incrementing long ensures a unique identifier.
+	private final static String uniqueIdPrefix = UUID.randomUUID().toString().replace("-", "");
+	private final static AtomicLong uniqueIdSuffix = new AtomicLong();
 
 	private final MessageDigest md5;
 
@@ -93,14 +100,12 @@ public abstract class AbstractRDFParser implements RDFParser {
 	/**
 	 * Mapping from namespace prefixes to namespace names.
 	 */
-	private Map<String, String> namespaceTable;
+	private final Map<String, String> namespaceTable;
 
 	/**
 	 * A collection of configuration options for this parser.
 	 */
 	private ParserConfig parserConfig;
-
-	static int counter = 0;
 
 	/*--------------*
 	 * Constructors *
@@ -226,81 +231,12 @@ public abstract class AbstractRDFParser implements RDFParser {
 	}
 
 	@Override
-	public void setVerifyData(boolean verifyData) {
-		this.parserConfig.set(BasicParserSettings.VERIFY_RELATIVE_URIS, verifyData);
-	}
-
-	/**
-	 * @deprecated Use specific settings instead.
-	 */
-	@Deprecated
-	public boolean verifyData() {
-		return this.parserConfig.verifyData();
-	}
-
-	@Override
 	public void setPreserveBNodeIDs(boolean preserveBNodeIDs) {
 		this.parserConfig.set(BasicParserSettings.PRESERVE_BNODE_IDS, preserveBNodeIDs);
 	}
 
 	public boolean preserveBNodeIDs() {
 		return this.parserConfig.get(BasicParserSettings.PRESERVE_BNODE_IDS);
-	}
-
-	@Deprecated
-	@Override
-	public void setStopAtFirstError(boolean stopAtFirstError) {
-		getParserConfig().set(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES, stopAtFirstError);
-		if (!stopAtFirstError) {
-			getParserConfig().addNonFatalError(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
-		} else {
-			// TODO: Add a ParserConfig.removeNonFatalError function to avoid
-			// this
-			Set<RioSetting<?>> set = new HashSet<>(getParserConfig().getNonFatalErrors());
-			set.remove(NTriplesParserSettings.FAIL_ON_NTRIPLES_INVALID_LINES);
-			getParserConfig().setNonFatalErrors(set);
-		}
-	}
-
-	/**
-	 * @deprecated Check specific settings instead.
-	 */
-	@Deprecated
-	public boolean stopAtFirstError() {
-		return this.parserConfig.stopAtFirstError();
-	}
-
-	@SuppressWarnings("deprecation")
-	@Override
-	public void setDatatypeHandling(DatatypeHandling datatypeHandling) {
-		if (datatypeHandling == DatatypeHandling.VERIFY) {
-			this.parserConfig.set(BasicParserSettings.VERIFY_DATATYPE_VALUES, true);
-			this.parserConfig.set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
-		} else if (datatypeHandling == DatatypeHandling.NORMALIZE) {
-			this.parserConfig.set(BasicParserSettings.VERIFY_DATATYPE_VALUES, true);
-			this.parserConfig.set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, true);
-			this.parserConfig.set(BasicParserSettings.NORMALIZE_DATATYPE_VALUES, true);
-		} else {
-			// Only ignore if they have not explicitly set any of the relevant
-			// settings before this point
-			if (!this.parserConfig.isSet(BasicParserSettings.NORMALIZE_DATATYPE_VALUES)
-					&& !this.parserConfig.isSet(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES)
-					&& !this.parserConfig.isSet(BasicParserSettings.NORMALIZE_DATATYPE_VALUES)) {
-				this.parserConfig.set(BasicParserSettings.VERIFY_DATATYPE_VALUES, false);
-				this.parserConfig.set(BasicParserSettings.FAIL_ON_UNKNOWN_DATATYPES, false);
-				this.parserConfig.set(BasicParserSettings.NORMALIZE_DATATYPE_VALUES, false);
-			}
-		}
-	}
-
-	/**
-	 * @deprecated Use {@link BasicParserSettings#VERIFY_DATATYPE_VALUES} and
-	 *             {@link BasicParserSettings#FAIL_ON_UNKNOWN_DATATYPES} and
-	 *             {@link BasicParserSettings#NORMALIZE_DATATYPE_VALUES} instead.
-	 */
-	@Deprecated
-	public DatatypeHandling datatypeHandling() {
-		return this.parserConfig.datatypeHandling();
 	}
 
 	/**
@@ -428,7 +364,7 @@ public abstract class AbstractRDFParser implements RDFParser {
 
 	/**
 	 * Creates a new {@link BNode} or Skolem {@link IRI} object.
-	 * 
+	 *
 	 * @return blank node or skolem IRI
 	 */
 	protected Resource createNode() throws RDFParseException {
@@ -450,7 +386,7 @@ public abstract class AbstractRDFParser implements RDFParser {
 
 	/**
 	 * Creates a {@link BNode} or Skolem {@link IRI} object for the specified identifier.
-	 * 
+	 *
 	 * @param nodeID node identifier
 	 * @return blank node or skolem IRI
 	 */
@@ -783,13 +719,13 @@ public abstract class AbstractRDFParser implements RDFParser {
 		RDFParserHelper.reportFatalError(message, e, lineNo, columnNo, getParseErrorListener());
 	}
 
-	private final String createUniqueBNodePrefix() {
-		return UUID.randomUUID().toString().replaceAll("-", "") + "-";
+	private String createUniqueBNodePrefix() {
+		return uniqueIdPrefix + uniqueIdSuffix.incrementAndGet() + "-";
 	}
 
 	/**
 	 * Parse skolem origin, if set
-	 * 
+	 *
 	 * @return skolem origin or null
 	 */
 	private ParsedIRI getCachedSkolemOrigin() {

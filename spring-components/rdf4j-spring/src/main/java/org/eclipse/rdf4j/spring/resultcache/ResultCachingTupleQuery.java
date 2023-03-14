@@ -1,33 +1,40 @@
-/*
- * ******************************************************************************
- *  * Copyright (c) 2021 Eclipse RDF4J contributors.
- *  * All rights reserved. This program and the accompanying materials
- *  * are made available under the terms of the Eclipse Distribution License v1.0
- *  * which accompanies this distribution, and is available at
- *  * http://www.eclipse.org/org/documents/edl-v10.php.
- *  ******************************************************************************
- */
+/*******************************************************************************
+ * Copyright (c) 2021 Eclipse RDF4J contributors.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *******************************************************************************/
 
 package org.eclipse.rdf4j.spring.resultcache;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.ref.WeakReference;
 
-import org.eclipse.rdf4j.query.*;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.QueryResults;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResult;
+import org.eclipse.rdf4j.query.TupleQueryResultHandler;
+import org.eclipse.rdf4j.query.TupleQueryResultHandlerException;
 import org.eclipse.rdf4j.spring.support.query.DelegatingTupleQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @since 4.0.0
  * @author Florian Kleedorfer
+ * @since 4.0.0
  */
 public class ResultCachingTupleQuery extends DelegatingTupleQuery {
 	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	private WeakReference<ResultCache<Integer, ReusableTupleQueryResult>> localResultCacheRef;
-	private ResultCache<Integer, ReusableTupleQueryResult> globalResultCache;
-	private ResultCacheProperties properties;
+	private final ResultCache<Integer, ReusableTupleQueryResult> globalResultCache;
+	private final ResultCacheProperties properties;
 
 	public ResultCachingTupleQuery(
 			TupleQuery delegate,

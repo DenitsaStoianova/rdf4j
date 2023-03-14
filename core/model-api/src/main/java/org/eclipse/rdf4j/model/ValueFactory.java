@@ -1,10 +1,13 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
- ******************************************************************************/
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *******************************************************************************/
 package org.eclipse.rdf4j.model;
 
 import java.math.BigDecimal;
@@ -15,12 +18,13 @@ import java.util.Date;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.eclipse.rdf4j.model.base.CoreDatatype;
+
 /**
  * A factory for creating {@link IRI IRIs}, {@link BNode blank nodes}, {@link Literal literals} and {@link Statement
  * statements} based on the RDF-1.1 Concepts and Abstract Syntax, a W3C Recommendation.
  *
  * @author Arjohn Kampman
- *
  * @see <a href="http://www.w3.org/TR/rdf11-concepts/">RDF-1.1 Concepts and Abstract Syntax</a>
  */
 public interface ValueFactory {
@@ -67,6 +71,7 @@ public interface ValueFactory {
 	 * object must be <a href="http://www.w3.org/2001/XMLSchema#string">{@code xsd:string}</a>.
 	 *
 	 * @param label The literal's label, must not be <var>null</var>.
+	 * @return A literal for the specified value.
 	 */
 	Literal createLiteral(String label);
 
@@ -77,6 +82,7 @@ public interface ValueFactory {
 	 *
 	 * @param label    The literal's label, must not be <var>null</var>.
 	 * @param language The literal's language attribute, must not be <var>null</var>.
+	 * @return A literal for the specified value and language attribute.
 	 */
 	Literal createLiteral(String label, String language);
 
@@ -87,8 +93,27 @@ public interface ValueFactory {
 	 * @param datatype The literal's datatype. If it is null, the datatype
 	 *                 <a href="http://www.w3.org/2001/XMLSchema#string">{@code xsd:string}</a> will be assigned to this
 	 *                 literal.
+	 * @return A literal for the specified value and type.
 	 */
 	Literal createLiteral(String label, IRI datatype);
+
+	/**
+	 * Creates a new literal with the supplied label and datatype.
+	 *
+	 * @param label    The literal's label, must not be <var>null</var>.
+	 * @param datatype The literal's datatype. It may not be null.
+	 */
+	Literal createLiteral(String label, CoreDatatype datatype);
+
+	/**
+	 * Creates a new literal with the supplied label and datatype.
+	 *
+	 * @param label    The literal's label, must not be <var>null</var>.
+	 * @param datatype The literal's datatype. If it is null, the datatype
+	 *                 <a href="http://www.w3.org/2001/XMLSchema#string">{@code xsd:string}</a> will be assigned to this
+	 *                 literal.
+	 */
+	Literal createLiteral(String label, IRI datatype, CoreDatatype coreDatatype);
 
 	/**
 	 * Creates a new <var>xsd:boolean</var>-typed literal representing the specified value.
@@ -147,12 +172,18 @@ public interface ValueFactory {
 	Literal createLiteral(double value);
 
 	/**
-	 * Creates a new literal representing the specified bigDecimal that is typed as an <var>xsd:Decimal</var>.
+	 * Creates a new literal representing the specified bigDecimal that is typed as an <var>xsd:decimal</var>.
+	 *
+	 * @param bigDecimal The value for the literal.
+	 * @return An <var>xsd:decimal</var>-typed literal for the specified value.
 	 */
 	Literal createLiteral(BigDecimal bigDecimal);
 
 	/**
-	 * Creates a new literal representing the specified bigInteger that is typed as an <var>xsd:Integer</var>.
+	 * Creates a new literal representing the specified bigInteger that is typed as an <var>xsd:integer</var>.
+	 *
+	 * @param bigInteger The value for the literal.
+	 * @return An <var>xsd:integer</var>-typed literal for the specified value.
 	 */
 	Literal createLiteral(BigInteger bigInteger);
 
@@ -160,21 +191,16 @@ public interface ValueFactory {
 	 * Creates a new literal representing a temporal accessor value.
 	 *
 	 * @param value the temporal accessor value for the literal
-	 *
 	 * @return a literal representing the specified temporal accessor {@code value} with the appropriate
 	 *         {@linkplain Literal#temporalAccessorValue() XML Schema date/time datatype}
-	 *
 	 * @throws NullPointerException     if {@code value} is {@code null}
 	 * @throws IllegalArgumentException if {@code value} cannot be represented by an XML Schema date/time datatype
-	 *
-	 * @since 3.5.0
 	 * @author Alessandro Bollini
-	 *
 	 * @apiNote See datatype-related API notes for {@link Literal#temporalAccessorValue()}.
-	 *
 	 * @implNote the default method implementation throws an {@link UnsupportedOperationException} and is only supplied
 	 *           as a stop-gap measure for backward compatibility: concrete classes implementing this interface are
 	 *           expected to override it.
+	 * @since 3.5.0
 	 */
 	default Literal createLiteral(TemporalAccessor value) {
 		throw new UnsupportedOperationException();
@@ -184,21 +210,16 @@ public interface ValueFactory {
 	 * Creates a new literal representing a temporal amount value.
 	 *
 	 * @param value the temporal amount value for the literal
-	 *
 	 * @return a literal representing the specified temporal amount {@code value} with the appropriate
 	 *         {@linkplain Literal#temporalAmountValue() XML Schema duration datatype}
-	 *
 	 * @throws NullPointerException     if {@code value} is {@code null}
 	 * @throws IllegalArgumentException if {@code value} cannot be represented by an XML Schema duration datatype
-	 *
-	 * @since 3.5.0
 	 * @author Alessandro Bollini
-	 *
 	 * @apiNote See datatype-related API notes for {@link Literal#temporalAmountValue()}.
-	 *
 	 * @implNote the default method implementation throws an {@link UnsupportedOperationException} and is only supplied
 	 *           as a stop-gap measure for backward compatibility: concrete classes implementing this interface are
 	 *           expected to override it.
+	 * @since 3.5.0
 	 */
 	default Literal createLiteral(TemporalAmount value) {
 		throw new UnsupportedOperationException();
@@ -216,6 +237,9 @@ public interface ValueFactory {
 	/**
 	 * Creates a new literal representing the specified date that is typed using the appropriate XML Schema date/time
 	 * datatype.
+	 *
+	 * @param date The value for the literal.
+	 * @return A typed literal for the specified date.
 	 */
 	Literal createLiteral(Date date);
 

@@ -1,12 +1,13 @@
-/*
- * ******************************************************************************
- *  * Copyright (c) 2021 Eclipse RDF4J contributors.
- *  * All rights reserved. This program and the accompanying materials
- *  * are made available under the terms of the Eclipse Distribution License v1.0
- *  * which accompanies this distribution, and is available at
- *  * http://www.eclipse.org/org/documents/edl-v10.php.
- *  ******************************************************************************
- */
+/*******************************************************************************
+ * Copyright (c) 2021 Eclipse RDF4J contributors.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *******************************************************************************/
 
 package org.eclipse.rdf4j.spring.pool;
 
@@ -24,14 +25,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Obtains connections from the delegate factory and manages them in the object pool.
- * 
- * @since 4.0.0
+ *
  * @author Florian Kleedorfer
+ * @since 4.0.0
  */
 class PooledConnectionObjectFactory extends BasePooledObjectFactory<RepositoryConnection> {
 	private final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private ObjectPool<RepositoryConnection> pool;
-	private RepositoryConnectionFactory delegate;
+	private final RepositoryConnectionFactory delegate;
 
 	public PooledConnectionObjectFactory(RepositoryConnectionFactory delegate) {
 		this.delegate = delegate;

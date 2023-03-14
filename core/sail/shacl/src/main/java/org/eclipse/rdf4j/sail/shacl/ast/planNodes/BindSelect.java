@@ -1,9 +1,12 @@
 /*******************************************************************************
- * .Copyright (c) 2020 Eclipse RDF4J contributors.
+ * Copyright (c) 2020 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.sail.shacl.ast.planNodes;
@@ -20,19 +23,20 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.Dataset;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.query.QueryLanguage;
 import org.eclipse.rdf4j.query.algebra.BindingSetAssignment;
+import org.eclipse.rdf4j.query.algebra.TupleExpr;
 import org.eclipse.rdf4j.query.algebra.helpers.AbstractQueryModelVisitor;
 import org.eclipse.rdf4j.query.impl.EmptyBindingSet;
-import org.eclipse.rdf4j.query.parser.ParsedQuery;
-import org.eclipse.rdf4j.query.parser.QueryParserFactory;
-import org.eclipse.rdf4j.query.parser.QueryParserRegistry;
 import org.eclipse.rdf4j.sail.SailConnection;
 import org.eclipse.rdf4j.sail.SailException;
 import org.eclipse.rdf4j.sail.memory.MemoryStoreConnection;
+import org.eclipse.rdf4j.sail.shacl.ast.SparqlQueryParserCache;
 import org.eclipse.rdf4j.sail.shacl.ast.StatementMatcher;
 import org.eclipse.rdf4j.sail.shacl.ast.constraintcomponents.AbstractConstraintComponent;
 import org.eclipse.rdf4j.sail.shacl.ast.constraintcomponents.ConstraintComponent;
@@ -51,6 +55,7 @@ public class BindSelect implements PlanNode {
 	private static final Logger logger = LoggerFactory.getLogger(BindSelect.class);
 
 	private final SailConnection connection;
+	private final Dataset dataset;
 	private final Function<BindingSet, ValidationTuple> mapper;
 
 	private final String query;
@@ -65,33 +70,38 @@ public class BindSelect implements PlanNode {
 	private boolean printed = false;
 	private ValidationExecutionLogger validationExecutionLogger;
 
-	public BindSelect(SailConnection connection, String query, List<StatementMatcher.Variable> vars, PlanNode source,
+	public BindSelect(SailConnection connection, Resource[] dataGraph, String query,
+			List<StatementMatcher.Variable> vars, PlanNode source,
 			List<String> varNames, ConstraintComponent.Scope scope, int bulkSize, EffectiveTarget.Extend direction,
 			boolean includePropertyShapeValues) {
 		this.connection = connection;
-		this.mapper = (bindingSet) -> new ValidationTuple(bindingSet, varNames, scope, includePropertyShapeValues);
+		assert this.connection != null;
+		this.mapper = (bindingSet) -> new ValidationTuple(bindingSet, varNames, scope, includePropertyShapeValues,
+				dataGraph);
 		this.varNames = varNames;
 		this.scope = scope;
 		this.vars = vars;
 		this.bulkSize = bulkSize;
-		source = PlanNodeHelper.handleSorting(this, source);
-		this.source = source;
+		this.source = PlanNodeHelper.handleSorting(this, source);
 
 		if (query.trim().equals("")) {
 			throw new IllegalStateException();
 		}
 
-		this.query = query;
+		this.query = StatementMatcher.StableRandomVariableProvider.normalize(query);
 		this.direction = direction;
 		this.includePropertyShapeValues = includePropertyShapeValues;
+
+		dataset = PlanNodeHelper.asDefaultGraphDataset(dataGraph);
+
 		// this.stackTrace = Thread.currentThread().getStackTrace();
 
 	}
 
-	private void updateQuery(ParsedQuery parsedQuery, List<BindingSet> newBindindingset, int expectedSize) {
+	private void updateQuery(TupleExpr parsedQuery, List<BindingSet> newBindindingset, int expectedSize) {
 		try {
 
-			parsedQuery.getTupleExpr()
+			parsedQuery
 					.visit(new AbstractQueryModelVisitor<Exception>() {
 						@Override
 						public void meet(BindingSetAssignment node) throws Exception {
@@ -119,7 +129,7 @@ public class BindSelect implements PlanNode {
 			final CloseableIteration<? extends ValidationTuple, SailException> iterator = source.iterator();
 			List<ValidationTuple> bulk = new ArrayList<>(bulkSize);
 
-			ParsedQuery parsedQuery = null;
+			TupleExpr parsedQuery = null;
 
 			public void calculateNext() {
 
@@ -192,8 +202,14 @@ public class BindSelect implements PlanNode {
 
 								return temp == targetChainSize;
 							})
-							.map(t -> new SimpleBindingSet(varNamesSet, varNames,
-									t.getTargetChain(includePropertyShapeValues)))
+							.map(t -> {
+								List<Value> targetChain = t.getTargetChain(includePropertyShapeValues);
+								if (targetChain.size() == 1) {
+									return new SingletonBindingSet(varNames.get(0), targetChain.get(0));
+								} else {
+									return new SimpleBindingSet(varNamesSet, varNames, targetChain);
+								}
+							})
 							.collect(Collectors.toList());
 
 					bulk = bulk
@@ -213,7 +229,7 @@ public class BindSelect implements PlanNode {
 
 					updateQuery(parsedQuery, bindingSets, targetChainSize);
 
-					bindingSet = connection.evaluate(parsedQuery.getTupleExpr(), parsedQuery.getDataset(),
+					bindingSet = connection.evaluate(parsedQuery, dataset,
 							EmptyBindingSet.getInstance(), true);
 				}
 			}
@@ -247,7 +263,7 @@ public class BindSelect implements PlanNode {
 		};
 	}
 
-	private ParsedQuery getParsedQuery(int targetChainSize) {
+	private TupleExpr getParsedQuery(int targetChainSize) {
 
 		StringBuilder values = new StringBuilder("\nVALUES( ");
 		if (direction == EffectiveTarget.Extend.right) {
@@ -271,18 +287,12 @@ public class BindSelect implements PlanNode {
 		query = query.replace(AbstractConstraintComponent.VALUES_INJECTION_POINT, values.toString());
 		query = "select * where { " + values + query + "\n}";
 
-		QueryParserFactory queryParserFactory = QueryParserRegistry.getInstance()
-				.get(QueryLanguage.SPARQL)
-				.get();
-		ParsedQuery parsedQuery;
 		try {
-			parsedQuery = queryParserFactory.getParser().parseQuery(query, null);
-
+			return SparqlQueryParserCache.get(query);
 		} catch (MalformedQueryException e) {
-			logger.error("Malformed query: \n{}", query);
+			logger.error("Malformed query:\n{}", query);
 			throw e;
 		}
-		return parsedQuery;
 	}
 
 	@Override
@@ -355,16 +365,18 @@ public class BindSelect implements PlanNode {
 					query.equals(that.query) &&
 					vars.equals(that.vars) &&
 					source.equals(that.source) &&
+					Objects.equals(dataset, that.dataset) &&
 					direction == that.direction;
 		} else {
 			return bulkSize == that.bulkSize &&
 					includePropertyShapeValues == that.includePropertyShapeValues &&
-					connection.equals(that.connection) &&
+					Objects.equals(connection, that.connection) &&
 					varNames.equals(that.varNames) &&
 					scope.equals(that.scope) &&
 					query.equals(that.query) &&
 					vars.equals(that.vars) &&
 					source.equals(that.source) &&
+					Objects.equals(dataset, that.dataset) &&
 					direction == that.direction;
 		}
 
@@ -376,10 +388,10 @@ public class BindSelect implements PlanNode {
 		// sail
 		if (connection instanceof MemoryStoreConnection) {
 			return Objects.hash(((MemoryStoreConnection) connection).getSail(), varNames, scope, query, vars, bulkSize,
-					source, direction, includePropertyShapeValues);
+					source, direction, includePropertyShapeValues, dataset);
 		} else {
 			return Objects.hash(connection, varNames, scope, query, vars, bulkSize, source, direction,
-					includePropertyShapeValues);
+					includePropertyShapeValues, dataset);
 		}
 	}
 

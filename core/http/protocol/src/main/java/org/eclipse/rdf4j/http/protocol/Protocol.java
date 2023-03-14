@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.http.protocol;
 
@@ -23,27 +26,47 @@ public abstract class Protocol {
 	 *
 	 * @author Jeen Broekstra
 	 */
-	public static enum Action {
-		/** adding data */
+	public enum Action {
+		/**
+		 * adding data
+		 */
 		ADD,
-		/** deleting data */
+		/**
+		 * deleting data
+		 */
 		DELETE,
-		/** getStatements or exportStatements */
+		/**
+		 * getStatements or exportStatements
+		 */
 		GET,
-		/** retrieving repository size */
+		/**
+		 * retrieving repository size
+		 */
 		SIZE,
-		/** SPARQL query */
+		/**
+		 * SPARQL query
+		 */
 		QUERY,
-		/** SPARQL Update */
+		/**
+		 * SPARQL Update
+		 */
 		UPDATE,
-		/** Keep alive ping @since 2.3 */
+		/**
+		 * Keep alive ping @since 2.3
+		 */
 		PING,
-		/** prepare */
+		/**
+		 * prepare
+		 */
 		PREPARE,
-		/** commit */
+		/**
+		 * commit
+		 */
 		COMMIT,
-		/** rollback */
-		ROLLBACK;
+		/**
+		 * rollback
+		 */
+		ROLLBACK
 	}
 
 	/**
@@ -51,7 +74,7 @@ public abstract class Protocol {
 	 * are initialize before static fields.
 	 */
 	@Deprecated
-	public static enum TIMEOUT {
+	public enum TIMEOUT {
 		CACHE;
 
 		/**
@@ -188,8 +211,8 @@ public abstract class Protocol {
 	/**
 	 * Parameter name for the isolation level used in transactions.
 	 *
-	 * @deprecated since 3.3.0. Use <code>transaction-setting__isolation-level</code> instead.
 	 * @see #TRANSACTION_SETTINGS_PREFIX
+	 * @deprecated since 3.3.0. Use <code>transaction-setting__isolation-level</code> instead.
 	 */
 	@Deprecated
 	public static final String ISOLATION_LEVEL_PARAM_NAME = "isolation-level";
@@ -335,7 +358,6 @@ public abstract class Protocol {
 	 *
 	 * @param repositoryLocation the location of a repository implementing this REST protocol.
 	 * @return the location of the configuration resource for the specified repository
-	 *
 	 */
 	public static final String getRepositoryConfigLocation(String repositoryLocation) {
 		return repositoryLocation + "/" + CONFIG;

@@ -1,12 +1,13 @@
-/*
- * ******************************************************************************
- *  * Copyright (c) 2021 Eclipse RDF4J contributors.
- *  * All rights reserved. This program and the accompanying materials
- *  * are made available under the terms of the Eclipse Distribution License v1.0
- *  * which accompanies this distribution, and is available at
- *  * http://www.eclipse.org/org/documents/edl-v10.php.
- *  ******************************************************************************
- */
+/*******************************************************************************
+ * Copyright (c) 2021 Eclipse RDF4J contributors.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *******************************************************************************/
 
 package org.eclipse.rdf4j.spring.support;
 
@@ -24,6 +25,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.eclipse.rdf4j.common.annotation.Experimental;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
@@ -36,7 +38,6 @@ import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.sail.shacl.ShaclSailValidationException;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.Expressions;
 import org.eclipse.rdf4j.sparqlbuilder.constraint.propertypath.PropertyPath;
-import org.eclipse.rdf4j.sparqlbuilder.core.ExtendedVariable;
 import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.ModifyQuery;
@@ -57,26 +58,31 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 
 /**
- * @since 4.0.0
  * @author Florian Kleedorfer
  * @author Gabriel Pickl
+ * @since 4.0.0
  */
+@Experimental
 public class RDF4JTemplate {
 	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	private RepositoryConnectionFactory repositoryConnectionFactory;
-	private OperationInstantiator operationInstantiator;
-	@Autowired
-	private ResourceLoader resourceLoader;
-
-	@Autowired(required = false)
-	private UUIDSource uuidSource;
+	private final RepositoryConnectionFactory repositoryConnectionFactory;
+	private final OperationInstantiator operationInstantiator;
+	private final ResourceLoader resourceLoader;
+	private final UUIDSource uuidSource;
 
 	public RDF4JTemplate(
-			RepositoryConnectionFactory repositoryConnectionFactory,
-			OperationInstantiator operationInstantiator) {
+			@Autowired RepositoryConnectionFactory repositoryConnectionFactory,
+			@Autowired OperationInstantiator operationInstantiator,
+			@Autowired ResourceLoader resourceLoader,
+			@Autowired(required = false) UUIDSource uuidSource) {
 		this.repositoryConnectionFactory = repositoryConnectionFactory;
 		this.operationInstantiator = operationInstantiator;
-		this.uuidSource = new DefaultUUIDSource();
+		this.resourceLoader = resourceLoader;
+		if (uuidSource == null) {
+			this.uuidSource = new DefaultUUIDSource();
+		} else {
+			this.uuidSource = uuidSource;
+		}
 	}
 
 	public void consumeConnection(final Consumer<RepositoryConnection> fun) {
@@ -125,7 +131,7 @@ public class RDF4JTemplate {
 	 * Uses a cached {@link Update} if one is available under the specified <code>operationName
 	 * </code> for the {@link RepositoryConnection} that is used, otherwise the query string is obtained from the
 	 * specified supplier, a new Update is instantiated and cached for future calls to this method.
-	 *
+	 * <p>
 	 * Note: this call is equivalent to {@link #update(String)} if operation caching is disabled.
 	 *
 	 * @param owner                the class of the client requesting the update, used to generate a cache key in
@@ -146,7 +152,6 @@ public class RDF4JTemplate {
 	 * Reads the update from the specified resource and provides it through a {@link Supplier <String>} in
 	 * {@link #update(Class, String, Supplier)}, using the <code>resourceName
 	 * </code> as the <code>operationName</code>.
-	 *
 	 */
 	public UpdateExecutionBuilder updateFromResource(Class<?> owner, String resourceName) {
 		return update(
@@ -200,7 +205,6 @@ public class RDF4JTemplate {
 	 * Reads the query from the specified resource and provides it through a {@link Supplier <String>} in
 	 * {@link #tupleQuery(Class, String, Supplier)}, using the <code>
 	 * resourceName</code> as the <code>operationName</code>.
-	 *
 	 */
 	public TupleQueryEvaluationBuilder tupleQueryFromResource(Class<?> owner, String resourceName) {
 		return tupleQuery(
@@ -273,7 +277,7 @@ public class RDF4JTemplate {
 
 	/**
 	 * Deletes the specified resource: all triples are deleted in which <code>id</code> is the subject or the object.
-	 * 
+	 *
 	 * @param id
 	 */
 	public void delete(IRI id) {
@@ -286,7 +290,7 @@ public class RDF4JTemplate {
 
 	/**
 	 * Deletes the specified resource and all resources <code>R</code> reached via any of the specified property paths.
-	 *
+	 * <p>
 	 * Deletion means that all triples are removed in which <code>start</code> or any resource in <code>R</code> are the
 	 * subject or the object.
 	 *
@@ -323,8 +327,8 @@ public class RDF4JTemplate {
 			Collection<IRI> toResources,
 			boolean deleteOtherOutgoing,
 			boolean deleteOtherIcoming) {
-		ExtendedVariable from = new ExtendedVariable("fromResource");
-		ExtendedVariable to = new ExtendedVariable("toResource");
+		Variable from = SparqlBuilder.var("fromResource");
+		Variable to = SparqlBuilder.var("toResource");
 		if (deleteOtherOutgoing) {
 			String query = Queries.MODIFY()
 					.delete(from.has(property, to))

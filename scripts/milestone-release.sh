@@ -7,7 +7,7 @@ echo "The release script requires several external command line tools:"
 echo " - git"
 echo " - mvn"
 echo " - gh (the GitHub CLI, see https://github.com/cli/cli)"
-echo " - xmlllint (http://xmlsoft.org/xmllint.html)"
+echo " - xmllint (http://xmlsoft.org/xmllint.html)"
 
 echo ""
 echo "This script will stop if an unhandled error occurs";
@@ -52,18 +52,6 @@ if ! command -v xmllint &> /dev/null; then
     echo "See http://xmlsoft.org/xmllint.html"
     echo "";
     exit 1;
-fi
-
-# check Java version
-if  !  mvn -v | grep -q "Java version: 1.8."; then
-  echo "";
-  echo "Java 1.8 expected but not detected";
-  read -rp "Continue (y/n)?" choice
-  case "${choice}" in
-      y|Y ) echo "";;
-      n|N ) exit;;
-      * ) echo "unknown response, exiting"; exit;;
-  esac
 fi
 
 # check that we are on main or develop
@@ -148,7 +136,6 @@ MVN_VERSION_RELEASE=$(xmllint --xpath "//*[local-name()='project']/*[local-name(
 
 #Remove backup files. Finally, commit the version number changes:
 mvn versions:commit
-mvn -P compliance versions:commit
 
 
 BRANCH="releases/${MVN_VERSION_RELEASE}"
@@ -172,6 +159,7 @@ git push -u origin "${BRANCH}"
 git push origin "${MVN_VERSION_RELEASE}"
 
 # deleting the branch (local and remote) since we don't intend to merge the branch and it's enough that we leave the git tag
+git checkout "${MVN_VERSION_RELEASE}"
 git branch -d "${BRANCH}"
 git push origin --delete "${BRANCH}"
 
@@ -185,24 +173,23 @@ read -n 1 -srp "Press any key to continue (ctrl+c to cancel)"; printf "\n\n";
 
 mvn clean
 
-
 echo "Build javadocs"
 read -n 1 -srp "Press any key to continue (ctrl+c to cancel)"; printf "\n\n";
 
 git checkout "${MVN_VERSION_RELEASE}"
-mvn clean install -DskipTests -Djapicmp.skip
-mvn package -Passembly,!formatting -Djapicmp.skip -DskipTests --batch-mode
+mvn clean
+mvn package -Passembly -DskipTests
 
 git checkout main
 RELEASE_NOTES_BRANCH="${MVN_VERSION_RELEASE}-release-notes"
 git checkout -b "${RELEASE_NOTES_BRANCH}"
 
 tar -cvzf "site/static/javadoc/${MVN_VERSION_RELEASE}.tgz" -C target/site/apidocs .
-
+cp -f "site/static/javadoc/${MVN_VERSION_RELEASE}.tgz" "site/static/javadoc/latest.tgz"
 git add --all
 git commit -s -a -m "javadocs for ${MVN_VERSION_RELEASE}"
 git push --set-upstream origin "${RELEASE_NOTES_BRANCH}"
-gh pr create -B main --title "${MVN_VERSION_RELEASE} news item and docs" --body "Javadocs and news item for ${MVN_VERSION_RELEASE}"
+gh pr create -B main --title "${RELEASE_NOTES_BRANCH}" --body "Javadocs, release-notes and news item for ${MVN_VERSION_RELEASE}"
 
 echo "Javadocs are in git branch ${RELEASE_NOTES_BRANCH}"
 

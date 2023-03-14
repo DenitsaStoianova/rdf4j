@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2020 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.sail.shacl.ast.planNodes;
@@ -25,9 +28,7 @@ public class NotValuesIn implements PlanNode {
 	private ValidationExecutionLogger validationExecutionLogger;
 
 	public NotValuesIn(PlanNode parent, PlanNode notIn) {
-		parent = PlanNodeHelper.handleSorting(this, parent);
-
-		this.parent = parent;
+		this.parent = PlanNodeHelper.handleSorting(this, parent);
 		this.notIn = notIn;
 	}
 
@@ -78,7 +79,6 @@ public class NotValuesIn implements PlanNode {
 
 			@Override
 			public void localClose() throws SailException {
-
 				parentIterator.close();
 			}
 
@@ -125,12 +125,12 @@ public class NotValuesIn implements PlanNode {
 
 	@Override
 	public boolean producesSorted() {
-		return true;
+		return parent.producesSorted();
 	}
 
 	@Override
 	public boolean requiresSorted() {
-		return true;
+		return false;
 	}
 
 	@Override

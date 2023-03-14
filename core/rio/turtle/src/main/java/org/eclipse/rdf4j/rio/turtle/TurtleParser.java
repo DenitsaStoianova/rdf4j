@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.rio.turtle;
 
@@ -278,12 +281,11 @@ public class TurtleParser extends AbstractRDFParser {
 		skipWSC();
 
 		// Read the namespace URI
-		IRI namespace = parseURI();
+		String namespaceStr = parseURI().toString();
+
+		String prefixStr = prefixID.toString();
 
 		// Store and report this namespace mapping
-		String prefixStr = prefixID.toString();
-		String namespaceStr = namespace.toString();
-
 		setNamespace(prefixStr, namespaceStr);
 
 		if (rdfHandler != null) {
@@ -670,7 +672,7 @@ public class TurtleParser extends AbstractRDFParser {
 	 * @throws RDFParseException
 	 */
 	protected String parseQuotedString() throws IOException, RDFParseException {
-		String result = null;
+		String result;
 
 		int c1 = readCodePoint();
 
@@ -765,6 +767,11 @@ public class TurtleParser extends AbstractRDFParser {
 			}
 
 			appendCodepoint(sb, c);
+
+			if (c == '\n') {
+				lineNumber++;
+				reportLocation();
+			}
 
 			if (c == '\\') {
 				// This escapes the next character, which might be a '"'
@@ -954,7 +961,7 @@ public class TurtleParser extends AbstractRDFParser {
 					BasicParserSettings.VERIFY_RELATIVE_URIS);
 		}
 
-		String namespace = null;
+		String namespace;
 
 		if (c == ':') {
 			// qname using default namespace

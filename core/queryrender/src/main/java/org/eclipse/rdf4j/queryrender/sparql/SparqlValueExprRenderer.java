@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.queryrender.sparql;
 
@@ -28,7 +31,6 @@ import org.eclipse.rdf4j.query.algebra.IsURI;
 import org.eclipse.rdf4j.query.algebra.Label;
 import org.eclipse.rdf4j.query.algebra.Lang;
 import org.eclipse.rdf4j.query.algebra.LangMatches;
-import org.eclipse.rdf4j.query.algebra.Like;
 import org.eclipse.rdf4j.query.algebra.LocalName;
 import org.eclipse.rdf4j.query.algebra.MathExpr;
 import org.eclipse.rdf4j.query.algebra.Max;
@@ -377,18 +379,6 @@ final class SparqlValueExprRenderer extends AbstractQueryModelVisitor<Exception>
 	@Override
 	public void meet(Lang theOp) throws Exception {
 		unaryMeet("lang", theOp);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void meet(Like theOp) throws Exception {
-		theOp.getArg().visit(this);
-		mBuffer.append(" like \"").append(theOp.getPattern()).append("\"");
-		if (!theOp.isCaseSensitive()) {
-			mBuffer.append(" ignore case");
-		}
 	}
 
 	/**

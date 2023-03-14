@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2021 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.sail.shacl;
 
@@ -12,7 +15,6 @@ import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -22,20 +24,20 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.sail.SailConnection;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 public class NoChangeTest {
 
 	@Test
-	public void testSkippingValidationWhenThereAreNoChanges() throws IOException {
+	public void testSkippingValidationWhenThereAreNoChanges() throws IOException, InterruptedException {
 
 		ShaclSail shaclSail = new ShaclSail(new MemoryStore());
 		shaclSail.init();
 
 		Model shapes;
-		try (InputStream stream = NoShapesTest.class.getClassLoader().getResourceAsStream("shacl.ttl")) {
-			shapes = Rio.parse(stream, RDFFormat.TURTLE);
+		try (InputStream stream = NoShapesTest.class.getClassLoader().getResourceAsStream("shacl.trig")) {
+			shapes = Rio.parse(stream, RDFFormat.TRIG);
 		}
 
 		try (SailConnection connection = shaclSail.getConnection()) {

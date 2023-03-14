@@ -1,17 +1,19 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.common.app;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.eclipse.rdf4j.common.lang.ObjectUtil;
 
 /**
  * A product version in Aduna's version format (i.e. major.minor-modifier). Where major stands for the major version
@@ -51,7 +53,7 @@ public class AppVersion implements Comparable<AppVersion> {
 	/**
 	 * The version's build, if any.
 	 */
-	private String build;
+	private final String build;
 
 	/**
 	 * Construct an uninitialized AppVersion.
@@ -326,7 +328,7 @@ public class AppVersion implements Comparable<AppVersion> {
 			}
 		}
 
-		if (result == 0 && !ObjectUtil.nullEquals(modifier, other.modifier)) {
+		if (result == 0 && !Objects.equals(modifier, other.modifier)) {
 			if (modifier == null) {
 				result = 1;
 			} else if (other.modifier == null) {
@@ -371,7 +373,7 @@ public class AppVersion implements Comparable<AppVersion> {
 		final boolean hasBuild = buildSeparator > -1;
 
 		String major = versionString.substring(0, minorSeparator);
-		String minor = null;
+		String minor;
 		String patch = null;
 		String milestone = null;
 		String modifier = null;

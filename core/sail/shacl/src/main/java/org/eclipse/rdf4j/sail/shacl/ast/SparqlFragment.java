@@ -1,10 +1,13 @@
 /*******************************************************************************
  * Copyright (c) 2020 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
- ******************************************************************************/
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *******************************************************************************/
 package org.eclipse.rdf4j.sail.shacl.ast;
 
 import static org.eclipse.rdf4j.sail.shacl.ast.constraintcomponents.AbstractConstraintComponent.VALUES_INJECTION_POINT;
@@ -94,8 +97,7 @@ public class SparqlFragment {
 						assert !s.filterCondition;
 					})
 					.map(SparqlFragment::getFragment)
-					.map(SparqlFragment::indent)
-					.reduce((a, b) -> a + " \n " + b)
+					.reduce((a, b) -> a + "\n" + b)
 					.orElse("");
 
 			return bgp(collect, getStatementMatchers(sparqlFragments));
@@ -174,7 +176,6 @@ public class SparqlFragment {
 	public String getFragment() {
 		if (union) {
 			return unionFragments.stream()
-					.map(SparqlFragment::indent)
 					.collect(
 							Collectors.joining(
 									"\n} UNION {\n" + VALUES_INJECTION_POINT + "\n",
@@ -197,7 +198,4 @@ public class SparqlFragment {
 		this.statementMatchers.addAll(statementMatchers);
 	}
 
-	public static String indent(String toIndent) {
-		return REGEX_INDENT.matcher(toIndent).replaceAll("\t");
-	}
 }

@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.sail.nativerdf;
 
@@ -17,7 +20,6 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
-import org.eclipse.rdf4j.common.io.FileUtil;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Namespace;
@@ -54,13 +56,13 @@ abstract class MemoryOverflowModel extends AbstractModel {
 
 	final Logger logger = LoggerFactory.getLogger(MemoryOverflowModel.class);
 
-	private LinkedHashModel memory;
+	private volatile LinkedHashModel memory;
 
-	transient File dataDir;
+	private transient File dataDir;
 
-	transient SailStore store;
+	private transient SailStore store;
 
-	transient SailSourceModel disk;
+	private transient volatile SailSourceModel disk;
 
 	private long baseline = 0;
 
@@ -192,11 +194,15 @@ abstract class MemoryOverflowModel extends AbstractModel {
 
 	protected abstract SailStore createSailStore(File dataDir) throws IOException, SailException;
 
-	synchronized Model getDelegate() {
-		if (disk == null) {
+	private Model getDelegate() {
+		LinkedHashModel memory = this.memory;
+		if (memory != null) {
 			return memory;
+		} else {
+			synchronized (this) {
+				return disk;
+			}
 		}
-		return disk;
 	}
 
 	private void writeObject(ObjectOutputStream s) throws IOException {
@@ -266,32 +272,15 @@ abstract class MemoryOverflowModel extends AbstractModel {
 
 	private synchronized void overflowToDisk() {
 		try {
+			LinkedHashModel memory = this.memory;
+			this.memory = null;
+
 			assert disk == null;
 			dataDir = Files.createTempDirectory("model").toFile();
 			logger.debug("memory overflow using temp directory {}", dataDir);
 			store = createSailStore(dataDir);
-			disk = new SailSourceModel(store) {
-
-				@Override
-				protected void finalize() throws Throwable {
-					logger.debug("finalizing {}", dataDir);
-					if (disk == this) {
-						try {
-							store.close();
-						} catch (SailException e) {
-							logger.error(e.toString(), e);
-						} finally {
-							FileUtil.deleteDir(dataDir);
-							dataDir = null;
-							store = null;
-							disk = null;
-						}
-					}
-					super.finalize();
-				}
-			};
+			disk = new SailSourceModel(store);
 			disk.addAll(memory);
-			memory = new LinkedHashModel(memory.getNamespaces(), LARGE_BLOCK);
 			logger.debug("overflow synced to disk");
 		} catch (IOException | SailException e) {
 			String path = dataDir != null ? dataDir.getAbsolutePath() : "(unknown)";

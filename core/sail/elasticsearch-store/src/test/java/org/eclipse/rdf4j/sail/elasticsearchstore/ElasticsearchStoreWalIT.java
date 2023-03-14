@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2019 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.sail.elasticsearchstore;
 
@@ -15,7 +18,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.assertj.core.util.Files;
 import org.codelibs.elasticsearch.runner.ElasticsearchClusterRunner;
 import org.eclipse.rdf4j.common.transaction.IsolationLevels;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -28,12 +30,13 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,26 +47,27 @@ public class ElasticsearchStoreWalIT {
 	private static ElasticsearchClusterRunner runner;
 	private static final SimpleValueFactory vf = SimpleValueFactory.getInstance();
 
-	private static File installLocation = Files.newTemporaryFolder();
+	@TempDir
+	static File installLocation;
 
-	@BeforeClass
+	@BeforeAll
 	public static void beforeClass() throws IOException, InterruptedException {
 		runner = TestHelpers.startElasticsearch(installLocation);
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void afterClass() throws IOException {
 		TestHelpers.stopElasticsearch(runner);
 	}
 
-	@After
+	@AfterEach
 	public void after() throws UnknownHostException {
 		runner.admin().indices().refresh(Requests.refreshRequest("*")).actionGet();
 		deleteAllIndexes();
 
 	}
 
-	@Before
+	@BeforeEach
 	public void before() throws UnknownHostException {
 //		embeddedElastic.refreshIndices();
 //
@@ -97,7 +101,7 @@ public class ElasticsearchStoreWalIT {
 
 	}
 
-	@Ignore // No WAL implemented yet
+	@Disabled // No WAL implemented yet
 	@Test
 	public void testAddLargeDataset() {
 
@@ -159,7 +163,7 @@ public class ElasticsearchStoreWalIT {
 
 	}
 
-	@Ignore // No WAL implemented yet
+	@Disabled // No WAL implemented yet
 	@Test
 	public void testRemoveLargeDataset() {
 

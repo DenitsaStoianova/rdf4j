@@ -1,19 +1,24 @@
-/*
- * ******************************************************************************
- *  * Copyright (c) 2021 Eclipse RDF4J contributors.
- *  * All rights reserved. This program and the accompanying materials
- *  * are made available under the terms of the Eclipse Distribution License v1.0
- *  * which accompanies this distribution, and is available at
- *  * http://www.eclipse.org/org/documents/edl-v10.php.
- *  ******************************************************************************
- */
+/*******************************************************************************
+ * Copyright (c) 2021 Eclipse RDF4J contributors.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *******************************************************************************/
 
 package org.eclipse.rdf4j.spring.uuidsource.sequence;
 
 import static org.eclipse.rdf4j.spring.util.QueryResultUtils.getIRI;
 
 import java.lang.invoke.MethodHandles;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Queue;
+import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -29,14 +34,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * @since 4.0.0
  * @author Florian Kleedorfer
+ * @since 4.0.0
  */
 public class UUIDSequence implements UUIDSource {
 	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 	private @Autowired RDF4JTemplate rdf4JTemplate;
-	private int prefetchCount;
-	private Map<RepositoryConnection, Queue<IRI>> prefetchedUUIDs = Collections.synchronizedMap(new WeakHashMap<>());
+	private final int prefetchCount;
+	private final Map<RepositoryConnection, Queue<IRI>> prefetchedUUIDs = Collections
+			.synchronizedMap(new WeakHashMap<>());
 
 	public UUIDSequence(UUIDSequenceProperties properties) {
 		this.prefetchCount = properties.getPrefetchCount();

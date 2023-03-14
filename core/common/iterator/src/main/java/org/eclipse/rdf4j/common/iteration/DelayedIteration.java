@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.common.iteration;
@@ -16,13 +19,14 @@ import java.util.NoSuchElementException;
  * or where a created iteration consumes scarce resources like JDBC-connections or memory. Subclasses must implement the
  * <var>createIteration</var> method, which is called once when the iteration is first needed.
  */
+@Deprecated(since = "4.1.0")
 public abstract class DelayedIteration<E, X extends Exception> extends AbstractCloseableIteration<E, X> {
 
 	/*-----------*
 	 * Variables *
 	 *-----------*/
 
-	private volatile Iteration<? extends E, ? extends X> iter;
+	private Iteration<? extends E, ? extends X> iter;
 
 	/*--------------*
 	 * Constructors *
@@ -56,11 +60,9 @@ public abstract class DelayedIteration<E, X extends Exception> extends AbstractC
 		Iteration<? extends E, ? extends X> resultIter = iter;
 		if (resultIter == null) {
 			// Underlying iterator has not yet been initialized
-			synchronized (this) {
-				resultIter = iter;
-				if (resultIter == null) {
-					resultIter = iter = createIteration();
-				}
+			resultIter = iter;
+			if (resultIter == null) {
+				resultIter = iter = createIteration();
 			}
 		}
 
@@ -78,11 +80,9 @@ public abstract class DelayedIteration<E, X extends Exception> extends AbstractC
 		Iteration<? extends E, ? extends X> resultIter = iter;
 		if (resultIter == null) {
 			// Underlying iterator has not yet been initialized
-			synchronized (this) {
-				resultIter = iter;
-				if (resultIter == null) {
-					resultIter = iter = createIteration();
-				}
+			resultIter = iter;
+			if (resultIter == null) {
+				resultIter = iter = createIteration();
 			}
 		}
 

@@ -1,35 +1,29 @@
-/*
- * ******************************************************************************
- *  * Copyright (c) 2021 Eclipse RDF4J contributors.
- *  * All rights reserved. This program and the accompanying materials
- *  * are made available under the terms of the Eclipse Distribution License v1.0
- *  * which accompanies this distribution, and is available at
- *  * http://www.eclipse.org/org/documents/edl-v10.php.
- *  ******************************************************************************
- */
+/*******************************************************************************
+ * Copyright (c) 2021 Eclipse RDF4J contributors.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *******************************************************************************/
 
 package org.eclipse.rdf4j.spring.dao.support.operation;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collector;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.query.QueryEvaluationException;
-import org.eclipse.rdf4j.query.QueryResultUtil;
-import org.eclipse.rdf4j.query.TupleQueryResult;
 import org.eclipse.rdf4j.spring.RDF4JSpringTestBase;
 import org.eclipse.rdf4j.spring.dao.exception.IncorrectResultSetSizeException;
-import org.eclipse.rdf4j.spring.dao.support.BindingSetMapper;
-import org.eclipse.rdf4j.spring.dao.support.MappingPostProcessor;
-import org.eclipse.rdf4j.spring.dao.support.TupleQueryResultMapper;
 import org.eclipse.rdf4j.spring.domain.model.EX;
 import org.eclipse.rdf4j.spring.support.RDF4JTemplate;
 import org.eclipse.rdf4j.spring.util.QueryResultUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -810,29 +804,27 @@ public class TupleQueryResultConverterTests extends RDF4JSpringTestBase {
 	/**
 	 * TODO
 	 *
-	 *
 	 * @Test public void testToMap() {
-	 * 
+	 *       <p>
 	 *       }
-	 * 
+	 *       <p>
 	 *       public <K, V> Map<K, List<V>> toMapOfList( Function<BindingSet, K> keyMapper, Function<BindingSet, V>
 	 *       valueMapper) { return resultConverter.toMapOfList(keyMapper, valueMapper); }
-	 * 
+	 *       <p>
 	 *       public <T, K, V> Map<K, V> toMap(BindingSetMapper<T> mapper, Function<T, K> keyMapper, Function<T, V>
 	 *       valueMapper) { return resultConverter.toMap(mapper, keyMapper, valueMapper); }
-	 * 
+	 *       <p>
 	 *       public <K, V> Map<K, V> toMap( Function<BindingSet, Map.Entry<K, V>> entryMapper) { return
 	 *       resultConverter.toMap(entryMapper); }
-	 * 
+	 *       <p>
 	 *       public <T, K, V> Map<K, Set<V>> toMapOfSet( BindingSetMapper<T> mapper, Function<T, K> keyMapper,
 	 *       Function<T, V> valueMapper) { return resultConverter.toMapOfSet(mapper, keyMapper, valueMapper); }
-	 * 
+	 *       <p>
 	 *       public <T, K, V> Map<K, List<V>> toMapOfList( BindingSetMapper<T> mapper, Function<T, K> keyMapper,
 	 *       Function<T, V> valueMapper) { return resultConverter.toMapOfList(mapper, keyMapper, valueMapper); }
-	 * 
+	 *       <p>
 	 *       public Stream<BindingSet> getBindingStream( TupleQueryResult result) { return
 	 *       resultConverter.getBindingStream(result); }
-	 * 
 	 */
 
 	private TupleQueryResultConverter forMultiple() {

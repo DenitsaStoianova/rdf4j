@@ -1,19 +1,22 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.query.algebra.evaluation.util;
 
 import static org.eclipse.rdf4j.query.algebra.Compare.CompareOp.EQ;
 import static org.eclipse.rdf4j.query.algebra.Compare.CompareOp.LT;
 import static org.eclipse.rdf4j.query.algebra.Compare.CompareOp.NE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -24,13 +27,14 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.base.CoreDatatype;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.eclipse.rdf4j.query.algebra.Compare;
 import org.eclipse.rdf4j.query.algebra.Compare.CompareOp;
 import org.eclipse.rdf4j.query.algebra.evaluation.ValueExprEvaluationException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Jeen Broekstra
@@ -79,7 +83,7 @@ public class QueryEvaluationUtilTest {
 
 	private Literal arg2unknown;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		arg1simple = f.createLiteral("abc");
 		arg2simple = f.createLiteral("b");
@@ -438,8 +442,8 @@ public class QueryEvaluationUtilTest {
 	 * @param op   The operator for the comparison
 	 */
 	private void assertCompareFalse(Literal lit1, Literal lit2, CompareOp op, boolean strict) {
-		assertFalse("Compare did not return false for " + lit1.toString() + op.getSymbol() + lit2.toString(),
-				QueryEvaluationUtil.compareLiterals(lit1, lit2, op, strict));
+		assertFalse(QueryEvaluationUtil.compareLiterals(lit1, lit2, op, strict),
+				"Compare did not return false for " + lit1.toString() + op.getSymbol() + lit2.toString());
 	}
 
 	private void assertCompareTrue(Literal lit1, Literal lit2, CompareOp op) {
@@ -456,8 +460,8 @@ public class QueryEvaluationUtilTest {
 	 * @param strict boolean switch between strict and extended comparison
 	 */
 	private void assertCompareTrue(Literal lit1, Literal lit2, CompareOp op, boolean strict) {
-		assertTrue("Compare did not return true for " + lit1.toString() + op.getSymbol() + lit2.toString(),
-				QueryEvaluationUtil.compareLiterals(lit1, lit2, op, strict));
+		assertTrue(QueryEvaluationUtil.compareLiterals(lit1, lit2, op, strict),
+				"Compare did not return true for " + lit1.toString() + op.getSymbol() + lit2.toString());
 	}
 
 	/**
@@ -619,6 +623,11 @@ public class QueryEvaluationUtilTest {
 			@Override
 			public XMLGregorianCalendar calendarValue() {
 				return nested.calendarValue();
+			}
+
+			@Override
+			public CoreDatatype getCoreDatatype() {
+				return nested.getCoreDatatype();
 			}
 
 			@Override

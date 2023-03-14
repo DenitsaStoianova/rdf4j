@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2020 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.sail.elasticsearchstore;
@@ -17,7 +20,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.assertj.core.util.Files;
 import org.codelibs.elasticsearch.runner.ElasticsearchClusterRunner;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
@@ -34,10 +36,11 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.TransportAddress;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,22 +52,23 @@ public class InferenceIT {
 	private static ElasticsearchClusterRunner runner;
 	private static SingletonClientProvider singletonClientProvider;
 
-	private static File installLocation = Files.newTemporaryFolder();
+	@TempDir
+	static File installLocation;
 
-	@BeforeClass
+	@BeforeAll
 	public static void beforeClass() throws IOException, InterruptedException {
 		runner = TestHelpers.startElasticsearch(installLocation);
 		singletonClientProvider = new SingletonClientProvider("localhost",
 				TestHelpers.getPort(runner), TestHelpers.CLUSTER);
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void afterClass() throws Exception {
 		singletonClientProvider.close();
 		TestHelpers.stopElasticsearch(runner);
 	}
 
-	@After
+	@AfterEach
 	public void after() {
 		runner.admin().indices().refresh(Requests.refreshRequest("*")).actionGet();
 		deleteAllIndexes();

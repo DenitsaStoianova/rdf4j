@@ -1,13 +1,17 @@
 /*******************************************************************************
  * Copyright (c) 2018 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.sail.shacl;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -19,7 +23,6 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-import org.eclipse.rdf4j.model.vocabulary.RDF4J;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.repository.sail.SailRepositoryConnection;
@@ -37,16 +40,18 @@ import org.eclipse.rdf4j.sail.memory.MemoryStore;
 public class Utils {
 
 	public static void loadShapeData(ShaclSail sail, String resourceName) throws IOException {
+		assert resourceName.endsWith(".trig") : "Not a RDF Trig file: " + resourceName;
 		sail.init();
 		sail.disableValidation();
 		Model shapes;
-		try (InputStream shapesData = Utils.class.getClassLoader().getResourceAsStream(resourceName)) {
-			shapes = Rio.parse(shapesData, "", RDFFormat.TURTLE, RDF4J.SHACL_SHAPE_GRAPH);
+		try (InputStream shapesData = getResourceAsStream(resourceName)) {
+			assert shapesData != null : "Could not find: " + resourceName;
+			shapes = Rio.parse(shapesData, "", RDFFormat.TRIG);
 		}
 		try (SailConnection conn = sail.getConnection()) {
 			conn.begin(IsolationLevels.NONE);
 			for (Statement st : shapes) {
-				conn.addStatement(st.getSubject(), st.getPredicate(), st.getObject(), RDF4J.SHACL_SHAPE_GRAPH);
+				conn.addStatement(st.getSubject(), st.getPredicate(), st.getObject(), st.getContext());
 			}
 			conn.commit();
 		}
@@ -55,23 +60,41 @@ public class Utils {
 	}
 
 	public static void loadShapeData(SailRepository repo, String resourceName) throws IOException {
+		assert resourceName.endsWith(".trig") : "Not a RDF Trig file: " + resourceName;
 
-		try (InputStream shapesData = Utils.class.getClassLoader().getResourceAsStream(resourceName)) {
-
+		try (InputStream shapesData = getResourceAsStream(resourceName)) {
+			assert shapesData != null : "Could not find: " + resourceName;
 			try (RepositoryConnection conn = repo.getConnection()) {
 				conn.begin(IsolationLevels.NONE, ShaclSail.TransactionSettings.ValidationApproach.Disabled);
-				conn.add(shapesData, "", RDFFormat.TURTLE, RDF4J.SHACL_SHAPE_GRAPH);
+				conn.add(shapesData, "", RDFFormat.TRIG);
 				conn.commit();
 			}
 		}
 	}
 
+	public static void loadShapeData(SailRepository repo, Model shapes) {
+		try (RepositoryConnection conn = repo.getConnection()) {
+			conn.begin(IsolationLevels.NONE, ShaclSail.TransactionSettings.ValidationApproach.Disabled);
+			conn.add(shapes);
+			conn.commit();
+		}
+	}
+
+	private static InputStream getResourceAsStream(String resourceName) {
+		InputStream resourceAsStream = Utils.class.getClassLoader().getResourceAsStream(resourceName);
+		if (resourceAsStream != null) {
+			return new BufferedInputStream(resourceAsStream);
+		}
+		return null;
+	}
+
 	public static void loadShapeData(SailRepository repo, URL resourceName)
 			throws RDF4JException, UnsupportedRDFormatException, IOException {
+		assert resourceName.toString().endsWith(".trig") : "Not a RDF Trig file: " + resourceName;
 
 		try (RepositoryConnection conn = repo.getConnection()) {
 			conn.begin(IsolationLevels.NONE, ShaclSail.TransactionSettings.ValidationApproach.Disabled);
-			conn.add(resourceName, resourceName.toString(), RDFFormat.TURTLE, RDF4J.SHACL_SHAPE_GRAPH);
+			conn.add(resourceName, resourceName.toString(), RDFFormat.TRIG);
 			conn.commit();
 		}
 	}
@@ -95,8 +118,8 @@ public class Utils {
 	}
 
 	public static SailRepository getInitializedShaclRepository(URL resourceName) {
+		assert resourceName.toString().endsWith(".trig") : "Not a RDF Trig file: " + resourceName;
 		SailRepository repo = new SailRepository(new ShaclSail(new MemoryStore()));
-		repo.initialize();
 		try {
 			Utils.loadShapeData(repo, resourceName);
 		} catch (IOException e) {
@@ -105,11 +128,10 @@ public class Utils {
 		return repo;
 	}
 
-	public static SailRepository getSailRepository(URL resourceName) {
+	public static SailRepository getSailRepository(URL resourceName, RDFFormat format) {
 		SailRepository sailRepository = new SailRepository(new MemoryStore());
-		sailRepository.initialize();
 		try (SailRepositoryConnection connection = sailRepository.getConnection()) {
-			connection.add(resourceName, resourceName.toString(), RDFFormat.TURTLE);
+			connection.add(resourceName, resourceName.toString(), format);
 		} catch (IOException | NullPointerException e) {
 			System.out.println("Error reading: " + resourceName);
 			throw new RuntimeException(e);
@@ -119,7 +141,7 @@ public class Utils {
 
 	public static void loadInitialData(SailRepository repo, String resourceName) throws IOException {
 
-		try (InputStream initialData = Utils.class.getClassLoader().getResourceAsStream(resourceName)) {
+		try (InputStream initialData = getResourceAsStream(resourceName)) {
 			if (initialData == null) {
 				return;
 			}
@@ -131,6 +153,16 @@ public class Utils {
 			}
 		}
 
+	}
+
+	public static void loadShapeData(SailRepository repo, URL resourceName, RDFFormat format, IRI shaclShapeGraph)
+			throws IOException {
+
+		try (RepositoryConnection conn = repo.getConnection()) {
+			conn.begin(IsolationLevels.NONE, ShaclSail.TransactionSettings.ValidationApproach.Disabled);
+			conn.add(resourceName, resourceName.toString(), format, shaclShapeGraph);
+			conn.commit();
+		}
 	}
 
 	static class Ex {
@@ -148,7 +180,7 @@ public class Utils {
 		}
 
 		public static IRI createIri() {
-			return SimpleValueFactory.getInstance().createIRI(ns + UUID.randomUUID().toString());
+			return SimpleValueFactory.getInstance().createIRI(ns + UUID.randomUUID());
 		}
 	}
 }

@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.eclipse.rdf4j</groupId>
 	<artifactId>rdf4j</artifactId>
-	<version>4.0.0-SNAPSHOT</version>
+	<version>4.2.4-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Eclipse RDF4J</name>
 	<description>An extensible Java framework for RDF and SPARQL</description>
@@ -62,7 +62,7 @@
 					<plugin>
 						<groupId>org.sonatype.plugins</groupId>
 						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.8</version>
+						<version>1.6.13</version>
 						<extensions>true</extensions>
 						<configuration>
 							<serverId>ossrh</serverId>
@@ -204,6 +204,10 @@
 			<properties>
 				<skipTests>true</skipTests>
 				<skipITs>true</skipITs>
+				<formatter.skip>true</formatter.skip>
+				<impsort.skip>true</impsort.skip>
+				<xml-format.skip>true</xml-format.skip>
+				<japicmp.skip>true</japicmp.skip>
 			</properties>
 		</profile>
 		<profile>
@@ -238,6 +242,32 @@
 					<url>https://oss.sonatype.org/content/repositories/snapshots</url>
 				</repository>
 			</repositories>
+		</profile>
+		<profile>
+			<id>licence-check</id>
+			<pluginRepositories>
+				<pluginRepository>
+					<id>dash-licenses-snapshots</id>
+					<url>https://repo.eclipse.org/content/repositories/dash-licenses-snapshots/</url>
+					<snapshots>
+						<enabled>true</enabled>
+					</snapshots>
+				</pluginRepository>
+			</pluginRepositories>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.eclipse.dash</groupId>
+						<artifactId>license-tool-plugin</artifactId>
+						<version>0.0.1-SNAPSHOT</version>
+						<configuration>
+							<failWhenReviewNeeded>true</failWhenReviewNeeded>
+							<!-- TODO: maven/mavencentral/org.openjdk.jmh/jmh-generator-annprocess/1.35, GPL-2.0-only WITH Classpath-exception-2.0, restricted, #3045 -->
+							<excludeGroupIds>org.openjdk.jmh</excludeGroupIds>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 		<profile>
 			<id>formatting</id>
@@ -327,25 +357,28 @@
 		</profile>
 	</profiles>
 	<properties>
+		<java.version>11</java.version>
+		<maven.compiler.release>${java.version}</maven.compiler.release>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<slf4j.version>1.7.31</slf4j.version>
-		<logback.version>1.1.11</logback.version>
+		<slf4j.version>1.7.36</slf4j.version>
+		<logback.version>1.2.11</logback.version>
 		<httpclient.version>4.5.13</httpclient.version>
-		<httpcore.version>4.4.14</httpcore.version>
-		<jackson.version>2.11.4</jackson.version>
-		<jsonldjava.version>0.13.3</jsonldjava.version>
+		<jackson.version>2.13.4</jackson.version>
+		<httpcore.version>4.4.15</httpcore.version>
+		<jsonldjava.version>0.13.4</jsonldjava.version>
 		<last.japicmp.compare.version>4.0.0</last.japicmp.compare.version>
-		<jaxb.version>2.3.1</jaxb.version>
+		<jaxb.version>2.3.3</jaxb.version>
 		<lucene.version>8.5.1</lucene.version>
+		<lwjgl.version>3.3.1</lwjgl.version>
 		<solr.version>8.4.1</solr.version>
 		<elasticsearch.version>7.8.1</elasticsearch.version>
-		<jetty.version>9.4.43.v20210629</jetty.version>
-		<spring.version>5.3.12</spring.version>
+		<spring.version>5.3.23</spring.version>
 		<guava.version>30.1.1-jre</guava.version>
-		<jmhVersion>1.21</jmhVersion>
+		<jmhVersion>1.35</jmhVersion>
 		<servlet.version>3.1.0</servlet.version>
-		<junit.version>5.7.2</junit.version>
+		<junit.version>5.8.2</junit.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -353,7 +386,15 @@
 			<dependency>
 				<groupId>com.fasterxml.jackson</groupId>
 				<artifactId>jackson-bom</artifactId>
-				<version>${jackson.version}</version>
+				<version>2.13.4.20221013</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<!-- fix dependencies for elastic/solr client libraries -->
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-bom</artifactId>
+				<version>9.4.49.v20220914</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -378,12 +419,12 @@
 			<dependency>
 				<groupId>commons-fileupload</groupId>
 				<artifactId>commons-fileupload</artifactId>
-				<version>1.3.3</version>
+				<version>1.5</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<version>2.9.0</version>
+				<version>2.11.0</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-codec</groupId>
@@ -393,7 +434,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-text</artifactId>
-				<version>1.9</version>
+				<version>1.10.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -551,19 +592,11 @@
 			</dependency>
 			<!-- Testing: JUnit -->
 			<dependency>
-				<groupId>org.junit.jupiter</groupId>
-				<artifactId>junit-jupiter-engine</artifactId>
+				<groupId>org.junit</groupId>
+				<artifactId>junit-bom</artifactId>
 				<version>${junit.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.junit.vintage</groupId>
-				<artifactId>junit-vintage-engine</artifactId>
-				<version>${junit.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.junit.jupiter</groupId>
-				<artifactId>junit-jupiter-params</artifactId>
-				<version>${junit.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.mockito</groupId>
@@ -579,7 +612,7 @@
 			<dependency>
 				<groupId>com.github.tomakehurst</groupId>
 				<artifactId>wiremock-jre8</artifactId>
-				<version>2.27.2</version>
+				<version>2.35.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.assertj</groupId>
@@ -628,37 +661,36 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
-					<version>3.3.0</version>
+					<version>3.4.2</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-antrun-plugin</artifactId>
-					<version>1.6</version>
+					<version>3.1.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-clean-plugin</artifactId>
-					<version>3.0.0</version>
+					<version>3.2.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.8.1</version>
+					<version>3.10.1</version>
 					<configuration>
-						<fork>true</fork>
-						<release>11</release>
+						<fork>false</fork>
 						<encoding>utf8</encoding>
 					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
-					<version>2.8</version>
+					<version>3.4.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-deploy-plugin</artifactId>
-					<version>2.5</version>
+					<version>3.0.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -668,16 +700,16 @@
 				<plugin>
 					<groupId>au.com.acegi</groupId>
 					<artifactId>xml-format-maven-plugin</artifactId>
-					<version>3.1.2</version>
+					<version>3.2.2</version>
 					<configuration>
 						<tabIndent>true</tabIndent>
-						<excludes>**/target/**,**/site/themes/**</excludes>
+						<excludes>eclipse-settings/**,**/target/**,**/site/themes/**,**/.*/**</excludes>
 					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-eclipse-plugin</artifactId>
-					<version>2.9</version>
+					<version>2.10</version>
 					<configuration>
 						<useProjectReferences>true</useProjectReferences>
 						<downloadSources>true</downloadSources>
@@ -693,7 +725,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
-					<version>3.2.0</version>
+					<version>3.3.0</version>
 					<configuration>
 						<archive>
 							<manifestEntries>
@@ -709,7 +741,7 @@
 				<plugin>
 					<groupId>org.apache.felix</groupId>
 					<artifactId>maven-bundle-plugin</artifactId>
-					<version>5.1.1</version>
+					<version>5.1.8</version>
 					<extensions>true</extensions>
 					<configuration>
 						<instructions>
@@ -725,7 +757,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.3.1</version>
+					<version>3.4.1</version>
 					<configuration>
 						<encoding>utf8</encoding>
 						<source>11</source>
@@ -733,7 +765,6 @@
 						<additionalOptions>
 							<additionalOption>-html5</additionalOption>
 						</additionalOptions>
-						<additionalJOption>${additional.j.option}</additionalJOption>
 						<additionalDependencies>
 							<additionalDependency>
 								<groupId>org.elasticsearch</groupId>
@@ -761,17 +792,17 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
-					<version>3.0.2</version>
+					<version>3.3.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
-					<version>3.1.0</version>
+					<version>3.2.1</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>properties-maven-plugin</artifactId>
-					<version>1.0.0</version>
+					<version>1.1.0</version>
 					<executions>
 						<execution>
 							<phase>generate-resources</phase>
@@ -788,7 +819,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>3.0.0-M5</version>
+					<version>3.0.0-M7</version>
 					<configuration>
 						<encoding>UTF-8</encoding>
 						<argLine>-Xmx2048M</argLine>
@@ -797,7 +828,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-failsafe-plugin</artifactId>
-					<version>3.0.0-M5</version>
+					<version>3.0.0-M7</version>
 					<configuration>
 						<encoding>UTF-8</encoding>
 						<forkCount>1</forkCount>
@@ -827,7 +858,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
-					<version>3.2.3</version>
+					<version>3.3.2</version>
 					<configuration>
 						<failOnMissingWebXml>false</failOnMissingWebXml>
 						<archive>
@@ -844,9 +875,9 @@
 				<plugin>
 					<groupId>net.revelc.code.formatter</groupId>
 					<artifactId>formatter-maven-plugin</artifactId>
-					<version>2.12.0</version>
+					<version>2.21.0</version>
 					<configuration>
-						<configFile>${maven.multiModuleProjectDirectory}/eclipse-settings/eclipse-rdf4j-conventions.xml</configFile>
+						<configFile>${project.basedir}/eclipse-settings/eclipse-rdf4j-conventions.xml</configFile>
 						<lineEnding>LF</lineEnding>
 						<skipHtmlFormatting>true</skipHtmlFormatting>
 					</configuration>
@@ -854,7 +885,7 @@
 				<plugin>
 					<groupId>net.revelc.code</groupId>
 					<artifactId>impsort-maven-plugin</artifactId>
-					<version>1.3.2</version>
+					<version>1.8.0</version>
 					<configuration>
 						<groups>java.,javax.,org.,com.</groups>
 						<staticGroups>java,*</staticGroups>
@@ -868,7 +899,7 @@
 				<plugin>
 					<groupId>com.github.siom79.japicmp</groupId>
 					<artifactId>japicmp-maven-plugin</artifactId>
-					<version>0.15.3</version>
+					<version>0.17.1</version>
 					<configuration>
 						<oldVersion>
 							<dependency>
@@ -885,8 +916,7 @@
 						</newVersion>
 						<parameter>
 							<onlyModified>true</onlyModified>
-							<breakBuildOnBinaryIncompatibleModifications>false</breakBuildOnBinaryIncompatibleModifications>
-							<breakBuildOnSourceIncompatibleModifications>false</breakBuildOnSourceIncompatibleModifications>
+							<breakBuildBasedOnSemanticVersioning>true</breakBuildBasedOnSemanticVersioning>
 							<ignoreMissingOldVersion>true</ignoreMissingOldVersion>
 							<excludes>
 								<exclude>@org.eclipse.rdf4j.common.annotation.InternalUseOnly</exclude>
@@ -895,20 +925,23 @@
 								<exclude>org.eclipse.rdf4j.common.annotation.Experimental</exclude>
 							</excludes>
 							<overrideCompatibilityChangeParameters>
-								<overrideCompatibilityChangeParameter>
-									<compatibilityChange>METHOD_ABSTRACT_ADDED_IN_IMPLEMENTED_INTERFACE</compatibilityChange>
-									<binaryCompatible>true</binaryCompatible>
-									<sourceCompatible>true</sourceCompatible>
-								</overrideCompatibilityChangeParameter>
+								<!-- The override below was previously activated, left as a comment in case we want to activate it again.
+                                <overrideCompatibilityChangeParameter>
+                                	<compatibilityChange>METHOD_ABSTRACT_ADDED_IN_IMPLEMENTED_INTERFACE</compatibilityChange>
+                                	<binaryCompatible>true</binaryCompatible>
+                                	<sourceCompatible>true</sourceCompatible>
+                                	<semanticVersionLevel>MINOR</semanticVersionLevel>
+                                </overrideCompatibilityChangeParameter>
+                                 -->
 								<overrideCompatibilityChangeParameter>
 									<compatibilityChange>METHOD_NEW_DEFAULT</compatibilityChange>
 									<binaryCompatible>true</binaryCompatible>
 									<sourceCompatible>true</sourceCompatible>
+									<semanticVersionLevel>MINOR</semanticVersionLevel>
 								</overrideCompatibilityChangeParameter>
 							</overrideCompatibilityChangeParameters>
 						</parameter>
 					</configuration>
-					<!-- API compatibility checks disabled for major release. Should be re-enabled after 4.0.0 is final
 					<executions>
 						<execution>
 							<phase>verify</phase>
@@ -917,12 +950,42 @@
 							</goals>
 						</execution>
 					</executions>
-					-->
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-shade-plugin</artifactId>
-					<version>3.2.1</version>
+					<version>3.4.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>3.1.0</version>
+					<executions>
+						<execution>
+							<id>enforce-maven-3</id>
+							<goals>
+								<goal>enforce</goal>
+							</goals>
+							<configuration>
+								<rules>
+									<requireMavenVersion>
+										<version>3.6.0</version>
+									</requireMavenVersion>
+								</rules>
+								<fail>true</fail>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>3.1.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+					<version>4.0.0-M4</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -940,6 +1003,11 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<inherited>true</inherited>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
 			</plugin>
 		</plugins>
 		<extensions>

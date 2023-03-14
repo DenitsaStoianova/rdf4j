@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2017 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.model.impl;
 
@@ -25,6 +28,7 @@ import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Triple;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.base.CoreDatatype;
 import org.eclipse.rdf4j.model.datatypes.XMLDatatypeUtil;
 import org.eclipse.rdf4j.model.util.Literals;
 import org.eclipse.rdf4j.model.util.URIUtil;
@@ -110,6 +114,22 @@ public class ValidatingValueFactory implements ValueFactory {
 			throw new IllegalArgumentException("Not a valid literal value");
 		}
 		return delegate.createLiteral(label, datatype);
+	}
+
+	@Override
+	public Literal createLiteral(String label, CoreDatatype datatype) {
+		if (!XMLDatatypeUtil.isValidValue(label, datatype)) {
+			throw new IllegalArgumentException("Not a valid literal value");
+		}
+		return delegate.createLiteral(label, datatype);
+	}
+
+	@Override
+	public Literal createLiteral(String label, IRI datatype, CoreDatatype coreDatatype) {
+		if (!XMLDatatypeUtil.isValidValue(label, coreDatatype)) {
+			throw new IllegalArgumentException("Not a valid literal value");
+		}
+		return delegate.createLiteral(label, datatype, coreDatatype);
 	}
 
 	@Override

@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.rio.helpers;
 
@@ -12,9 +15,9 @@ import java.util.Optional;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.base.CoreDatatype;
 import org.eclipse.rdf4j.model.util.LiteralUtilException;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.eclipse.rdf4j.rio.DatatypeHandler;
 import org.eclipse.rdf4j.rio.LanguageHandler;
 import org.eclipse.rdf4j.rio.ParseErrorListener;
@@ -86,7 +89,7 @@ public class RDFParserHelper {
 	 * @throws RDFParseException If there was an error during the process that could not be recovered from, based on
 	 *                           settings in the given parser config.
 	 */
-	public static final Literal createLiteral(String label, String lang, IRI datatype, ParserConfig parserConfig,
+	public static Literal createLiteral(String label, String lang, IRI datatype, ParserConfig parserConfig,
 			ParseErrorListener errListener, ValueFactory valueFactory, long lineNo, long columnNo)
 			throws RDFParseException {
 		if (label == null) {
@@ -198,9 +201,13 @@ public class RDFParserHelper {
 				}
 				// Backup for unnormalised datatype literal creation
 				else if (workingDatatype != null) {
-					result = valueFactory.createLiteral(workingLabel, workingDatatype);
+					CoreDatatype coreDatatype = CoreDatatype.from(workingDatatype);
+
+					result = valueFactory.createLiteral(workingLabel,
+							coreDatatype != CoreDatatype.NONE ? coreDatatype.getIri() : workingDatatype, coreDatatype);
+
 				} else {
-					result = valueFactory.createLiteral(workingLabel, XSD.STRING);
+					result = valueFactory.createLiteral(workingLabel, CoreDatatype.XSD.STRING);
 				}
 			} catch (Exception e) {
 				reportFatalError(e, lineNo, columnNo, errListener);

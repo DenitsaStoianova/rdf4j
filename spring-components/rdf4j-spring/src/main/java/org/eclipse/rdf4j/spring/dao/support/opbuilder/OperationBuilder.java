@@ -1,12 +1,13 @@
-/*
- * ******************************************************************************
- *  * Copyright (c) 2021 Eclipse RDF4J contributors.
- *  * All rights reserved. This program and the accompanying materials
- *  * are made available under the terms of the Eclipse Distribution License v1.0
- *  * which accompanies this distribution, and is available at
- *  * http://www.eclipse.org/org/documents/edl-v10.php.
- *  ******************************************************************************
- */
+/*******************************************************************************
+ * Copyright (c) 2021 Eclipse RDF4J contributors.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *******************************************************************************/
 
 package org.eclipse.rdf4j.spring.dao.support.opbuilder;
 
@@ -17,18 +18,18 @@ import java.util.function.Consumer;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.query.Operation;
-import org.eclipse.rdf4j.sparqlbuilder.core.ExtendedVariable;
+import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.spring.dao.support.bindingsBuilder.BindingsBuilder;
 import org.eclipse.rdf4j.spring.support.RDF4JTemplate;
 
 /**
- * @since 4.0.0
  * @author Florian Kleedorfer
+ * @since 4.0.0
  */
 public class OperationBuilder<T extends Operation, SUB extends OperationBuilder<T, SUB>> {
-	private T operation;
-	private BindingsBuilder bindingsBuilder = new BindingsBuilder();
-	private RDF4JTemplate rdf4JTemplate;
+	private final T operation;
+	private final BindingsBuilder bindingsBuilder = new BindingsBuilder();
+	private final RDF4JTemplate rdf4JTemplate;
 
 	public OperationBuilder(T operation, RDF4JTemplate template) {
 		Objects.requireNonNull(operation);
@@ -48,7 +49,7 @@ public class OperationBuilder<T extends Operation, SUB extends OperationBuilder<
 		return bindingsBuilder.build();
 	}
 
-	public SUB withBinding(ExtendedVariable key, IRI value) {
+	public SUB withBinding(Variable key, IRI value) {
 		bindingsBuilder.add(key, value);
 		return (SUB) this;
 	}
@@ -58,7 +59,7 @@ public class OperationBuilder<T extends Operation, SUB extends OperationBuilder<
 		return (SUB) this;
 	}
 
-	public SUB withBinding(ExtendedVariable key, String value) {
+	public SUB withBinding(Variable key, String value) {
 		bindingsBuilder.add(key, value);
 		return (SUB) this;
 	}
@@ -68,7 +69,7 @@ public class OperationBuilder<T extends Operation, SUB extends OperationBuilder<
 		return (SUB) this;
 	}
 
-	public SUB withBinding(ExtendedVariable key, Integer value) {
+	public SUB withBinding(Variable key, Integer value) {
 		bindingsBuilder.add(key, value);
 		return (SUB) this;
 	}
@@ -78,7 +79,7 @@ public class OperationBuilder<T extends Operation, SUB extends OperationBuilder<
 		return (SUB) this;
 	}
 
-	public SUB withBinding(ExtendedVariable key, Boolean value) {
+	public SUB withBinding(Variable key, Boolean value) {
 		bindingsBuilder.add(key, value);
 		return (SUB) this;
 	}
@@ -88,7 +89,7 @@ public class OperationBuilder<T extends Operation, SUB extends OperationBuilder<
 		return (SUB) this;
 	}
 
-	public SUB withBinding(ExtendedVariable key, Float value) {
+	public SUB withBinding(Variable key, Float value) {
 		bindingsBuilder.add(key, value);
 		return (SUB) this;
 	}
@@ -98,7 +99,7 @@ public class OperationBuilder<T extends Operation, SUB extends OperationBuilder<
 		return (SUB) this;
 	}
 
-	public SUB withBinding(ExtendedVariable key, Double value) {
+	public SUB withBinding(Variable key, Double value) {
 		bindingsBuilder.add(key, value);
 		return (SUB) this;
 	}

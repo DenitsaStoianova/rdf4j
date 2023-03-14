@@ -1,15 +1,17 @@
 /*******************************************************************************
  * Copyright (c) 2019 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.federated.endpoint;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -352,18 +354,18 @@ public class EndpointFactory {
 
 		@Override
 		public void endRDF() throws RDFHandlerException {
-			; // no-op
+			// no-op
 		}
 
 		@Override
 		public void handleComment(String comment) throws RDFHandlerException {
-			; // no-op
+			// no-op
 		}
 
 		@Override
 		public void handleNamespace(String prefix, String uri)
 				throws RDFHandlerException {
-			; // no-op
+			// no-op
 		}
 
 		@Override
@@ -373,7 +375,7 @@ public class EndpointFactory {
 
 		@Override
 		public void startRDF() throws RDFHandlerException {
-			; // no-op
+			// no-op
 		}
 	}
 }

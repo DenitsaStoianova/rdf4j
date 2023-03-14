@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2015 Eclipse RDF4J contributors, Aduna, and others.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.rio.rdfjson;
 
@@ -37,8 +40,10 @@ import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
 import org.eclipse.rdf4j.rio.helpers.RDFJSONWriterSettings;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonFactoryBuilder;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.StreamWriteFeature;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter.Indenter;
@@ -48,7 +53,7 @@ import com.fasterxml.jackson.core.util.DefaultPrettyPrinter.Indenter;
  *
  * @author Peter Ansell p_ansell@yahoo.com
  */
-public class RDFJSONWriter extends AbstractRDFWriter implements RDFWriter, CharSink {
+public class RDFJSONWriter extends AbstractRDFWriter implements CharSink {
 
 	private final Writer writer;
 
@@ -266,16 +271,16 @@ public class RDFJSONWriter extends AbstractRDFWriter implements RDFWriter, CharS
 	 * @return A newly configured JsonFactory based on the currently enabled settings
 	 */
 	private JsonFactory configureNewJsonFactory() {
-		final JsonFactory nextJsonFactory = new JsonFactory();
+		JsonFactoryBuilder builder = new JsonFactoryBuilder();
 		// Disable features that may work for most JSON where the field names are
 		// in limited supply,
 		// but does not work for RDF/JSON where a wide range of URIs are used for
 		// subjects and predicates
-		nextJsonFactory.disable(JsonFactory.Feature.INTERN_FIELD_NAMES);
-		nextJsonFactory.disable(JsonFactory.Feature.CANONICALIZE_FIELD_NAMES);
-		nextJsonFactory.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
+		builder.disable(JsonFactory.Feature.INTERN_FIELD_NAMES);
+		builder.disable(JsonFactory.Feature.CANONICALIZE_FIELD_NAMES);
+		builder.disable(StreamWriteFeature.AUTO_CLOSE_TARGET);
 
-		return nextJsonFactory;
+		return builder.build();
 	}
 
 	/**

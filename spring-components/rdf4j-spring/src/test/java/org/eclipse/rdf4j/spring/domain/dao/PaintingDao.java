@@ -1,17 +1,21 @@
-/*
- * ******************************************************************************
- *  * Copyright (c) 2021 Eclipse RDF4J contributors.
- *  * All rights reserved. This program and the accompanying materials
- *  * are made available under the terms of the Eclipse Distribution License v1.0
- *  * which accompanies this distribution, and is available at
- *  * http://www.eclipse.org/org/documents/edl-v10.php.
- *  ******************************************************************************
- */
+/*******************************************************************************
+ * Copyright (c) 2021 Eclipse RDF4J contributors.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *******************************************************************************/
 
 package org.eclipse.rdf4j.spring.domain.dao;
 
 import static org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf.iri;
-import static org.eclipse.rdf4j.spring.domain.model.Painting.*;
+import static org.eclipse.rdf4j.spring.domain.model.Painting.PAINTING_ARTIST_ID;
+import static org.eclipse.rdf4j.spring.domain.model.Painting.PAINTING_ID;
+import static org.eclipse.rdf4j.spring.domain.model.Painting.PAINTING_LABEL;
+import static org.eclipse.rdf4j.spring.domain.model.Painting.PAINTING_TECHNIQUE;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
@@ -27,8 +31,8 @@ import org.eclipse.rdf4j.spring.util.QueryResultUtils;
 import org.springframework.stereotype.Component;
 
 /**
- * @since 4.0.0
  * @author Florian Kleedorfer
+ * @since 4.0.0
  */
 @Component
 public class PaintingDao extends SimpleRDF4JCRUDDao<Painting, IRI> {

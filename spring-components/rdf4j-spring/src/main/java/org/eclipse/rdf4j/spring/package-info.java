@@ -1,12 +1,13 @@
-/*
- * ******************************************************************************
- *  * Copyright (c) 2021 Eclipse RDF4J contributors.
- *  * All rights reserved. This program and the accompanying materials
- *  * are made available under the terms of the Eclipse Distribution License v1.0
- *  * which accompanies this distribution, and is available at
- *  * http://www.eclipse.org/org/documents/edl-v10.php.
- *  ******************************************************************************
- */
+/*******************************************************************************
+ * Copyright (c) 2021 Eclipse RDF4J contributors.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *******************************************************************************/
 
 /**
  *
@@ -44,6 +45,7 @@
  * }
  * </pre>
  *
+ * <p>
  * For more information on the subsystems, please refer to their package-infos:
  *
  * <ul>
@@ -54,6 +56,12 @@
  * <li>{@link org.eclipse.rdf4j.spring.resultcache Rdf4J-Spring ResultCache}
  * <li>{@link org.eclipse.rdf4j.spring.tx Rdf4J-Spring Tx}
  * </ul>
+ * </p>
+ *
+ * <p>
+ * This software has been developed in the project 'BIM-Interoperables Merkmalservice', funded by the Austrian Research
+ * Promotion Agency and Österreichische Bautechnik Veranstaltungs GmbH.
+ * </p>
  *
  * @since 4.0.0
  * @author Florian Kleedorfer

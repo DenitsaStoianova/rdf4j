@@ -4,11 +4,11 @@
 	<parent>
 		<groupId>org.eclipse.rdf4j</groupId>
 		<artifactId>rdf4j-compliance</artifactId>
-		<version>4.0.0-SNAPSHOT</version>
+		<version>4.2.4-SNAPSHOT</version>
 	</parent>
 	<artifactId>rdf4j-repository-compliance</artifactId>
 	<packaging>war</packaging>
-	<name>RDF4J Repository compliance tests</name>
+	<name>RDF4J: Repository compliance tests</name>
 	<description>Compliance testing for the Repository API implementations</description>
 	<properties>
 		<testserver.webapp.dir>${project.build.directory}/rdf4j-server</testserver.webapp.dir>
@@ -41,6 +41,11 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
+			<artifactId>rdf4j-sail-inferencer</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
 			<artifactId>rdf4j-http-protocol</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -65,12 +70,10 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
-			<version>${jetty.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-webapp</artifactId>
-			<version>${jetty.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

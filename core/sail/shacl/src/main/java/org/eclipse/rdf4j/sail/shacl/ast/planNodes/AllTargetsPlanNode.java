@@ -1,13 +1,17 @@
 /*******************************************************************************
  * Copyright (c) 2021 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 package org.eclipse.rdf4j.sail.shacl.ast.planNodes;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -15,12 +19,13 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.rdf4j.common.iteration.CloseableIteration;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.sail.SailException;
-import org.eclipse.rdf4j.sail.shacl.ConnectionsGroup;
 import org.eclipse.rdf4j.sail.shacl.ast.StatementMatcher;
 import org.eclipse.rdf4j.sail.shacl.ast.constraintcomponents.ConstraintComponent;
 import org.eclipse.rdf4j.sail.shacl.ast.targets.EffectiveTarget;
+import org.eclipse.rdf4j.sail.shacl.wrapper.data.ConnectionsGroup;
 
 /**
  * Used to signal bulk validation. This plan node should only be used from EffectiveTarget#getAllTargets
@@ -33,7 +38,8 @@ public class AllTargetsPlanNode implements PlanNode {
 	private ValidationExecutionLogger validationExecutionLogger;
 
 	public AllTargetsPlanNode(ConnectionsGroup connectionsGroup,
-			ArrayDeque<EffectiveTarget.EffectiveTargetObject> chain, List<StatementMatcher.Variable> vars,
+			Resource[] dataGraph, ArrayDeque<EffectiveTarget.EffectiveTargetObject> chain,
+			List<StatementMatcher.Variable> vars,
 			ConstraintComponent.Scope scope) {
 		String query = chain.stream()
 				.map(EffectiveTarget.EffectiveTargetObject::getQueryFragment)
@@ -43,7 +49,7 @@ public class AllTargetsPlanNode implements PlanNode {
 		List<String> varNames = vars.stream().map(StatementMatcher.Variable::getName).collect(Collectors.toList());
 
 		this.select = new Select(connectionsGroup.getBaseConnection(), query, null,
-				new AllTargetsBindingSetMapper(varNames, scope, false));
+				new AllTargetsBindingSetMapper(varNames, scope, false, dataGraph), dataGraph);
 
 	}
 
@@ -133,19 +139,22 @@ public class AllTargetsPlanNode implements PlanNode {
 	}
 
 	static class AllTargetsBindingSetMapper implements Function<BindingSet, ValidationTuple> {
-		List<String> varNames;
-		ConstraintComponent.Scope scope;
-		boolean hasValue;
+		private final List<String> varNames;
+		private final ConstraintComponent.Scope scope;
+		private final boolean hasValue;
+		private final Resource[] contexts;
 
-		public AllTargetsBindingSetMapper(List<String> varNames, ConstraintComponent.Scope scope, boolean hasValue) {
+		public AllTargetsBindingSetMapper(List<String> varNames, ConstraintComponent.Scope scope, boolean hasValue,
+				Resource[] contexts) {
 			this.varNames = varNames;
 			this.scope = scope;
 			this.hasValue = hasValue;
+			this.contexts = contexts;
 		}
 
 		@Override
 		public ValidationTuple apply(BindingSet b) {
-			return new ValidationTuple(b, varNames, scope, false);
+			return new ValidationTuple(b, varNames, scope, false, contexts);
 		}
 
 		@Override
@@ -157,14 +166,15 @@ public class AllTargetsPlanNode implements PlanNode {
 				return false;
 			}
 			AllTargetsBindingSetMapper that = (AllTargetsBindingSetMapper) o;
-			return hasValue == that.hasValue &&
-					varNames.equals(that.varNames) &&
-					scope == that.scope;
+			return hasValue == that.hasValue && varNames.equals(that.varNames) && scope == that.scope
+					&& Arrays.equals(contexts, that.contexts);
 		}
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(varNames, scope, hasValue, AllTargetsBindingSetMapper.class);
+			int result = Objects.hash(varNames, scope, hasValue);
+			result = 31 * result + Arrays.hashCode(contexts);
+			return result;
 		}
 	}
 

@@ -1,17 +1,18 @@
 /*******************************************************************************
- * .Copyright (c) 2020 Eclipse RDF4J contributors.
+ * Copyright (c) 2020 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.sail.shacl.ast.planNodes;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.text.StringEscapeUtils;
@@ -38,43 +39,38 @@ public class UnionNode implements PlanNode {
 	}
 
 	public static PlanNode getInstance(PlanNode... nodes) {
-		PlanNode[] planNodes = Arrays.stream(nodes)
-				.filter(n -> !(n instanceof EmptyNode))
-				.flatMap(n -> {
-					if (n instanceof UnionNode) {
-						return Arrays.stream(((UnionNode) n).nodes);
-					}
-					return Stream.of(n);
-				})
-				.map(n -> PlanNodeHelper.handleSorting(true, n))
-				.toArray(PlanNode[]::new);
+		PlanNode[] planNodes = Arrays.stream(nodes).filter(n -> !(n instanceof EmptyNode)).flatMap(n -> {
+			if (n instanceof UnionNode) {
+				return Arrays.stream(((UnionNode) n).nodes);
+			}
+			return Stream.of(n);
+		}).map(n -> PlanNodeHelper.handleSorting(true, n)).toArray(PlanNode[]::new);
 
-		if (planNodes.length == 1)
+		if (planNodes.length == 1) {
 			return planNodes[0];
-		if (planNodes.length == 0)
+		}
+		if (planNodes.length == 0) {
 			return EmptyNode.getInstance();
+		}
 
 		return new UnionNode(planNodes);
 
 	}
 
 	public static PlanNode getInstanceDedupe(PlanNode... nodes) {
-		PlanNode[] planNodes = Arrays.stream(nodes)
-				.filter(n -> !(n instanceof EmptyNode))
-				.distinct()
-				.flatMap(n -> {
-					if (n instanceof UnionNode) {
-						return Arrays.stream(((UnionNode) n).nodes);
-					}
-					return Stream.of(n);
-				})
-				.map(n -> PlanNodeHelper.handleSorting(true, n))
-				.toArray(PlanNode[]::new);
+		PlanNode[] planNodes = Arrays.stream(nodes).filter(n -> !(n instanceof EmptyNode)).distinct().flatMap(n -> {
+			if (n instanceof UnionNode) {
+				return Arrays.stream(((UnionNode) n).nodes);
+			}
+			return Stream.of(n);
+		}).map(n -> PlanNodeHelper.handleSorting(true, n)).toArray(PlanNode[]::new);
 
-		if (planNodes.length == 1)
+		if (planNodes.length == 1) {
 			return planNodes[0];
-		if (planNodes.length == 0)
+		}
+		if (planNodes.length == 0) {
 			return EmptyNode.getInstance();
+		}
 
 		return new UnionNode(planNodes);
 
@@ -107,9 +103,10 @@ public class UnionNode implements PlanNode {
 
 		return new LoggingCloseableIteration(this, validationExecutionLogger) {
 
-			final List<CloseableIteration<? extends ValidationTuple, SailException>> iterators = Arrays.stream(nodes)
+			final CloseableIteration<? extends ValidationTuple, SailException>[] iterators = Arrays
+					.stream(nodes)
 					.map(PlanNode::iterator)
-					.collect(Collectors.toList());
+					.toArray(CloseableIteration[]::new);
 
 			final ValidationTuple[] peekList = new ValidationTuple[nodes.length];
 
@@ -124,7 +121,7 @@ public class UnionNode implements PlanNode {
 
 				for (int i = 0; i < peekList.length; i++) {
 					if (peekList[i] == null) {
-						CloseableIteration<? extends ValidationTuple, SailException> iterator = iterators.get(i);
+						var iterator = iterators[i];
 						if (iterator.hasNext()) {
 							peekList[i] = iterator.next();
 						}
@@ -160,7 +157,24 @@ public class UnionNode implements PlanNode {
 
 			@Override
 			public void localClose() throws SailException {
-				iterators.forEach(CloseableIteration::close);
+				Throwable thrown = null;
+				for (int i = 0; i < iterators.length; i++) {
+					try {
+						iterators[i].close();
+					} catch (Throwable t) {
+						if (thrown != null) {
+							thrown.addSuppressed(t);
+						} else {
+							thrown = t;
+						}
+					} finally {
+						iterators[i] = null;
+					}
+				}
+
+				if (thrown != null) {
+					throw new SailException(thrown);
+				}
 			}
 
 			@Override

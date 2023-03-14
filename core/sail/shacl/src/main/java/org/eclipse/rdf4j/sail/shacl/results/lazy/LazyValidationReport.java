@@ -1,9 +1,12 @@
 /*******************************************************************************
  * Copyright (c) 2020 Eclipse RDF4J contributors.
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  *******************************************************************************/
 
 package org.eclipse.rdf4j.sail.shacl.results.lazy;
@@ -27,7 +30,6 @@ import org.eclipse.rdf4j.sail.shacl.results.ValidationResult;
 
 /**
  * A ValidationReport that will defer calculating any ValidationResults until the user asks for them
- *
  */
 @InternalUseOnly
 public class LazyValidationReport extends ValidationReport {
@@ -85,10 +87,6 @@ public class LazyValidationReport extends ValidationReport {
 
 	public Model asModel() {
 		return asModel(new DynamicModelFactory().createEmptyModel());
-	}
-
-	public Resource getId() {
-		return id;
 	}
 
 	/**

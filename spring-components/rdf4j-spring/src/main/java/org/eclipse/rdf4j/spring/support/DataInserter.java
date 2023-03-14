@@ -1,20 +1,23 @@
-/*
- * ******************************************************************************
- *  * Copyright (c) 2021 Eclipse RDF4J contributors.
- *  * All rights reserved. This program and the accompanying materials
- *  * are made available under the terms of the Eclipse Distribution License v1.0
- *  * which accompanies this distribution, and is available at
- *  * http://www.eclipse.org/org/documents/edl-v10.php.
- *  ******************************************************************************
- */
+/*******************************************************************************
+ * Copyright (c) 2021 Eclipse RDF4J contributors.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *******************************************************************************/
 
 package org.eclipse.rdf4j.spring.support;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Objects;
 
+import org.eclipse.rdf4j.common.annotation.Experimental;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.spring.dao.exception.RDF4JSpringException;
 import org.eclipse.rdf4j.spring.support.connectionfactory.RepositoryConnectionFactory;
 import org.slf4j.Logger;
@@ -26,9 +29,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * @since 4.0.0
  * @author Florian Kleedorfer
+ * @since 4.0.0
  */
+@Experimental
 @Component
 public class DataInserter {
 
@@ -43,7 +47,12 @@ public class DataInserter {
 		logger.debug("Loading data from {}...", dataFile);
 		try {
 			RepositoryConnection con = connectionFactory.getConnection();
-			con.add(dataFile.getInputStream(), "", RDFFormat.TURTLE);
+			RDFFormat fmt = Rio.getParserFormatForFileName(dataFile.getFilename())
+					.orElseThrow(
+							() -> new IllegalArgumentException(
+									"Failed to determine file format of input file "
+											+ dataFile));
+			con.add(dataFile.getInputStream(), "", fmt);
 		} catch (Exception e) {
 			throw new RDF4JSpringException("Unable to load test data", e);
 		}

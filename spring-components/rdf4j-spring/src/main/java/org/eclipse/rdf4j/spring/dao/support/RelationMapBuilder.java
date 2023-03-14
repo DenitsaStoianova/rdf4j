@@ -1,15 +1,17 @@
-/*
- * ******************************************************************************
- *  * Copyright (c) 2021 Eclipse RDF4J contributors.
- *  * All rights reserved. This program and the accompanying materials
- *  * are made available under the terms of the Eclipse Distribution License v1.0
- *  * which accompanies this distribution, and is available at
- *  * http://www.eclipse.org/org/documents/edl-v10.php.
- *  ******************************************************************************
- */
+/*******************************************************************************
+ * Copyright (c) 2021 Eclipse RDF4J contributors.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Distribution License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *******************************************************************************/
 
 package org.eclipse.rdf4j.spring.dao.support;
 
+import static org.eclipse.rdf4j.sparqlbuilder.rdf.Rdf.iri;
 import static org.eclipse.rdf4j.spring.util.QueryResultUtils.getIRI;
 import static org.eclipse.rdf4j.spring.util.QueryResultUtils.getIRIOptional;
 
@@ -23,9 +25,9 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.query.BindingSet;
-import org.eclipse.rdf4j.sparqlbuilder.core.ExtendedVariable;
 import org.eclipse.rdf4j.sparqlbuilder.core.Projectable;
 import org.eclipse.rdf4j.sparqlbuilder.core.SparqlBuilder;
+import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.eclipse.rdf4j.sparqlbuilder.core.query.Queries;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPattern;
 import org.eclipse.rdf4j.sparqlbuilder.graphpattern.TriplePattern;
@@ -35,26 +37,31 @@ import org.eclipse.rdf4j.spring.dao.support.opbuilder.TupleQueryEvaluationBuilde
 import org.eclipse.rdf4j.spring.support.RDF4JTemplate;
 
 /**
- * @since 4.0.0
  * @author Florian Kleedorfer
+ * @since 4.0.0
  */
 public class RelationMapBuilder {
-	public static final ExtendedVariable _relSubject = new ExtendedVariable("rel_subject");
-	public static final ExtendedVariable _relObject = new ExtendedVariable("rel_object");
-	private static final ExtendedVariable _relKey = new ExtendedVariable("rel_key");
-	private static final ExtendedVariable _relValue = new ExtendedVariable("rel_value");
+	public static final Variable _relSubject = SparqlBuilder.var("rel_subject");
+	public static final Variable _relObject = SparqlBuilder.var("rel_object");
+	private static final Variable _relKey = SparqlBuilder.var("rel_key");
+	private static final Variable _relValue = SparqlBuilder.var("rel_value");
 	private static final IRI NOTHING = SimpleValueFactory.getInstance()
 			.createIRI("urn:java:relationDaoSupport:Nothing");
-	private RdfPredicate predicate;
+	private final RdfPredicate predicate;
 	private GraphPattern[] constraints = new GraphPattern[0];
-	private RDF4JTemplate rdf4JTemplate;
+	private final RDF4JTemplate rdf4JTemplate;
 	private boolean isRelationOptional = false;
 	private boolean isSubjectKeyed = true;
-	private BindingsBuilder bindingsBuilder = new BindingsBuilder();
+	private final BindingsBuilder bindingsBuilder = new BindingsBuilder();
 
 	public RelationMapBuilder(RDF4JTemplate rdf4JTemplate, RdfPredicate predicate) {
 		this.rdf4JTemplate = rdf4JTemplate;
 		this.predicate = predicate;
+	}
+
+	public RelationMapBuilder(RDF4JTemplate rdf4JTemplate, IRI predicate) {
+		this.rdf4JTemplate = rdf4JTemplate;
+		this.predicate = iri(predicate);
 	}
 
 	/**
@@ -82,7 +89,6 @@ public class RelationMapBuilder {
 	/**
 	 * Indicates that the builder should use the triple's object for the key in the resulting {@link Map} instead of the
 	 * subject (the default).
-	 *
 	 */
 	public RelationMapBuilder useRelationObjectAsKey() {
 		this.isSubjectKeyed = false;
@@ -93,7 +99,6 @@ public class RelationMapBuilder {
 	 * Builds a One-to-One Map using the configuration of this builder. Throws an Exception if more than one values are
 	 * found for a given key. If {@link #isRelationOptional} is <code>true
 	 * </code> and no triple is found for the key, {@link #NOTHING} is set as the value.
-	 *
 	 */
 	public Map<IRI, IRI> buildOneToOne() {
 		return makeTupleQueryBuilder()
@@ -103,7 +108,6 @@ public class RelationMapBuilder {
 
 	/**
 	 * Builds a One-to-Many Map using the configuration of this builder.
-	 *
 	 */
 	public Map<IRI, Set<IRI>> buildOneToMany() {
 		return makeTupleQueryBuilder()
@@ -174,7 +178,7 @@ public class RelationMapBuilder {
 		}
 	}
 
-	public RelationMapBuilder withBinding(ExtendedVariable key, Value value) {
+	public RelationMapBuilder withBinding(Variable key, Value value) {
 		bindingsBuilder.add(key, value);
 		return this;
 	}
@@ -184,7 +188,7 @@ public class RelationMapBuilder {
 		return this;
 	}
 
-	public RelationMapBuilder withBindingMaybe(ExtendedVariable key, Value value) {
+	public RelationMapBuilder withBindingMaybe(Variable key, Value value) {
 		bindingsBuilder.addMaybe(key, value);
 		return this;
 	}
@@ -194,7 +198,7 @@ public class RelationMapBuilder {
 		return this;
 	}
 
-	public RelationMapBuilder withBinding(ExtendedVariable key, IRI value) {
+	public RelationMapBuilder withBinding(Variable key, IRI value) {
 		bindingsBuilder.add(key, value);
 		return this;
 	}
@@ -204,12 +208,12 @@ public class RelationMapBuilder {
 		return this;
 	}
 
-	public RelationMapBuilder withBindingMaybe(ExtendedVariable key, IRI value) {
+	public RelationMapBuilder withBindingMaybe(Variable key, IRI value) {
 		bindingsBuilder.addMaybe(key, value);
 		return this;
 	}
 
-	public RelationMapBuilder withBindingMaybe(ExtendedVariable key, String value) {
+	public RelationMapBuilder withBindingMaybe(Variable key, String value) {
 		bindingsBuilder.addMaybe(key, value);
 		return this;
 	}
@@ -219,7 +223,7 @@ public class RelationMapBuilder {
 		return this;
 	}
 
-	public RelationMapBuilder withBinding(ExtendedVariable key, String value) {
+	public RelationMapBuilder withBinding(Variable key, String value) {
 		bindingsBuilder.add(key, value);
 		return this;
 	}
@@ -234,7 +238,7 @@ public class RelationMapBuilder {
 		return this;
 	}
 
-	public RelationMapBuilder withBinding(ExtendedVariable key, Integer value) {
+	public RelationMapBuilder withBinding(Variable key, Integer value) {
 		bindingsBuilder.add(key, value);
 		return this;
 	}
@@ -244,7 +248,7 @@ public class RelationMapBuilder {
 		return this;
 	}
 
-	public RelationMapBuilder withBindingMaybe(ExtendedVariable key, Integer value) {
+	public RelationMapBuilder withBindingMaybe(Variable key, Integer value) {
 		bindingsBuilder.addMaybe(key, value);
 		return this;
 	}
@@ -254,7 +258,7 @@ public class RelationMapBuilder {
 		return this;
 	}
 
-	public RelationMapBuilder withBinding(ExtendedVariable key, Boolean value) {
+	public RelationMapBuilder withBinding(Variable key, Boolean value) {
 		bindingsBuilder.add(key, value);
 		return this;
 	}
@@ -264,7 +268,7 @@ public class RelationMapBuilder {
 		return this;
 	}
 
-	public RelationMapBuilder withBindingMaybe(ExtendedVariable key, Boolean value) {
+	public RelationMapBuilder withBindingMaybe(Variable key, Boolean value) {
 		bindingsBuilder.addMaybe(key, value);
 		return this;
 	}
@@ -274,7 +278,7 @@ public class RelationMapBuilder {
 		return this;
 	}
 
-	public RelationMapBuilder withBinding(ExtendedVariable key, Float value) {
+	public RelationMapBuilder withBinding(Variable key, Float value) {
 		bindingsBuilder.add(key, value);
 		return this;
 	}
@@ -284,7 +288,7 @@ public class RelationMapBuilder {
 		return this;
 	}
 
-	public RelationMapBuilder withBindingMaybe(ExtendedVariable key, Float value) {
+	public RelationMapBuilder withBindingMaybe(Variable key, Float value) {
 		bindingsBuilder.addMaybe(key, value);
 		return this;
 	}
@@ -294,7 +298,7 @@ public class RelationMapBuilder {
 		return this;
 	}
 
-	public RelationMapBuilder withBinding(ExtendedVariable key, Double value) {
+	public RelationMapBuilder withBinding(Variable key, Double value) {
 		bindingsBuilder.add(key, value);
 		return this;
 	}
@@ -304,7 +308,7 @@ public class RelationMapBuilder {
 		return this;
 	}
 
-	public RelationMapBuilder withBindingMaybe(ExtendedVariable var, Double value) {
+	public RelationMapBuilder withBindingMaybe(Variable var, Double value) {
 		bindingsBuilder.addMaybe(var, value);
 		return this;
 	}
